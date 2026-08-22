@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<title>Real News Video Finder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f3f6fb;--text:#172033;--muted:#667085;--line:#dfe5ef;--red:#e11d48;--red2:#be123c;--blue:#2563eb;--green:#16a34a;--purple:#7c3aed;--shadow:0 8px 30px rgba(15,23,42,.08)}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer}
+a{text-decoration:none}
+header{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid var(--line)}
+.header-inner{max-width:1100px;margin:auto;padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#e11d48,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900}
+.brand h1{font-size:16px}
+.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.settings-button{width:44px;height:44px;padding:0;font-size:20px}
+.container{max-width:1100px;margin:auto;padding:15px 13px 100px}
+.hero{background:linear-gradient(135deg,#0b1220,#312e81);color:#fff;border-radius:22px;padding:21px;margin-bottom:14px;box-shadow:var(--shadow)}
+.hero h2{font-size:21px;line-height:1.25;margin-bottom:8px}
+.hero p{color:#dbe4f2;font-size:12px;line-height:1.65}
+.search-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:var(--shadow)}
+label{display:block;font-size:12px;font-weight:900;margin-bottom:7px}
+textarea,input,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--text);outline:none;font-size:14px}
+textarea{min-height:78px;resize:vertical}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.search-button{width:100%;margin-top:12px;padding:14px;border-color:var(--red);background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:10px;font-weight:900;background:#fff;cursor:pointer}
+.chip.active{background:#fff1f2;color:#be123c;border-color:#fb7185}
+.keywords{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.keyword{background:#eef2ff;color:#3730a3;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:800}
+.notice{margin-top:11px;background:#ecfdf3;border:1px solid #bbf7d0;color:#14532d;border-radius:11px;padding:10px;font-size:10px;line-height:1.65}
+.status{margin:14px 2px 9px;color:var(--muted);font-size:12px;font-weight:800}
+.loader{display:none;text-align:center;padding:30px}
+.spinner{width:37px;height:37px;border:4px solid #e5e7eb;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:auto auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.video-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.thumbnail{position:relative;aspect-ratio:16/9;background:#0f172a;overflow:hidden}
+.thumbnail img,.thumbnail video{width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;top:8px;left:8px;background:#111827;color:#fff;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:900;z-index:2}
+.youtube-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(transparent,rgba(0,0,0,.4))}
+.youtube-play span{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:21px;color:#111827;padding-left:3px}
+.card-body{padding:11px}
+.card-title{font-size:13px;font-weight:900;line-height:1.45;margin-bottom:7px}
+.meta{color:var(--muted);font-size:10px;line-height:1.65;margin-bottom:10px}
+.card-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.card-buttons a,.card-buttons button{text-align:center;padding:9px 5px;font-size:10px;border-radius:9px}
+.preview{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.source{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.copy{background:#f8fafc;color:#334155;border-color:#cbd5e1}
+.use-cutter{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe;grid-column:1/-1}
+.direct-download{background:#ecfdf3;color:#15803d;border-color:#bbf7d0;grid-column:1/-1}
+.quick-clip-10{background:#fef3c7;color:#b45309;border-color:#fcd34d}
+.quick-clip-30{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
+.find-auth{background:#fef3c7;color:#92400e;border-color:#fcd34d;grid-column:1/-1}
+.quick-progress{grid-column:1/-1;margin-top:6px;padding:8px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;font-size:10px;text-align:center;color:var(--muted);display:none}
+.quick-progress.show{display:block}
+.quick-progress .bar{height:4px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:5px}
+.quick-progress .fill{height:100%;background:linear-gradient(90deg,#e11d48,#7c3aed);transition:.3s;width:0%}
+.empty{grid-column:1/-1;background:#fff;border:1px dashed #cbd5e1;border-radius:18px;padding:36px 20px;text-align:center;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:9px}
+.url-loader,.cutter-section{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:var(--shadow)}
+.section-title h3{font-size:18px}
+.section-title small{color:var(--muted);font-size:10px}
+.url-row{display:flex;gap:8px}
+.url-row input{flex:1}
+.url-load-button{min-width:110px;background:#111827;color:#fff;border-color:#111827}
+.url-help{margin-top:9px;color:var(--muted);font-size:10px;line-height:1.6}
+.file-area{border:2px dashed #cbd5e1;border-radius:16px;padding:20px;text-align:center;background:#f8fafc}
+.file-icon{font-size:38px;margin-bottom:8px}
+.file-area p{color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:12px}
+.file-button{display:inline-block;border:1px solid #cbd5e1;background:#fff;border-radius:12px;padding:11px 15px;font-weight:900;font-size:12px;cursor:pointer}
+#videoFile{display:none}
+#cutterPanel{display:none;margin-top:15px}
+.video-preview{background:#000;border-radius:15px;overflow:hidden}
+.video-preview video{width:100%;max-height:55vh;display:block;background:#000}
+.video-info{margin-top:9px;color:var(--muted);font-size:11px}
+.duration-buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.duration-button{flex:1;min-width:90px}
+.duration-button.active{background:#111827;color:#fff;border-color:#111827}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}
+.range-box{margin-top:12px}
+.range-box input[type=range]{padding:0;accent-color:var(--red)}
+.range-value{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-top:5px}
+.cut-button{width:100%;margin-top:13px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:#7c3aed;padding:14px;font-size:14px}
+.reset-button{width:100%;margin-top:8px}
+.progress-wrap{display:none;margin-top:12px}
+.progress-bg{width:100%;height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.progress-bar{width:0%;height:100%;background:linear-gradient(90deg,#e11d48,#7c3aed);transition:.2s}
+.progress-text{text-align:center;font-size:10px;color:var(--muted);margin-top:6px}
+.output-box{display:none;margin-top:14px;padding:12px;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:14px}
+.output-box h4{color:#15803d;font-size:13px;margin-bottom:9px}
+.output-video{width:100%;border-radius:11px;background:#000}
+.download-output{width:100%;display:block;text-align:center;margin-top:10px;padding:13px;border-radius:11px;background:#16a34a;color:#fff;font-weight:900;border:1px solid #15803d;font-size:13px}
+.modal{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.65);display:none;align-items:flex-end;justify-content:center;padding:10px}
+.modal.show{display:flex}
+.modal-box{width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:22px 22px 14px 14px;padding:18px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+.close{width:38px;height:38px;padding:0}
+.save-button{width:100%;margin-top:11px;background:#111827;color:#fff;border-color:#111827}
+.help{margin-top:12px;background:#f8fafc;border:1px solid var(--line);padding:11px;border-radius:11px;font-size:10px;line-height:1.7;color:#475569}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,120px);z-index:9000;background:#111827;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.2);transition:.25s;max-width:90%;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
+@media(max-width:850px){.results{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid,.results,.time-grid,.url-row{grid-template-columns:1fr;flex-direction:column}.url-load-button{width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-inner">
+    <div class="brand">
+        <div class="logo">▶</div>
+        <div><h1>Real News Video Finder</h1><small>Search → Authorized Video → 10/30s Clip</small></div>
+    </div>
+    <button class="settings-button" onclick="openSettings()">⚙️</button>
+</div>
+</header>
+
+<main class="container">
+
+<section class="hero">
+    <h2>📰 Headline डालें, Real Video पाएँ, Clip Download करें</h2>
+    <p>Wikimedia Commons + Internet Archive से <b>authorized real news videos</b> (बिना API key)। हर direct video पर ⚡10 sec / ⚡30 sec clip download। YouTube URL डालने पर app खुद authorized alternatives ढूँढता है।</p>
+</section>
+
+<section class="search-card">
+    <label>📰 News Headline</label>
+    <textarea id="headline" placeholder="उदाहरण: नरेंद्र मोदी की चुनावी सभा में बड़ा ऐलान"></textarea>
+    <div class="grid">
+        <div><label>📅 समय</label><select id="dateFilter"><option value="any">किसी भी तारीख</option><option value="day">पिछले 24 घंटे</option><option value="week">पिछला सप्ताह</option><option value="month">पिछला महीना</option></select></div>
+        <div><label>⏱️ Duration</label><select id="durationFilter"><option value="any">कोई भी</option><option value="short">1 मिनट तक</option><option value="medium">1–4 मिनट</option><option value="long">4+ मिनट</option></select></div>
+        <div><label>📺 Format</label><select id="orientation"><option value="any">कोई भी</option><option value="landscape">16:9</option><option value="portrait">9:16</option></select></div>
+        <div><label>🔐 License</label><select id="licenseFilter"><option value="any">सभी YouTube videos</option><option value="creativeCommon">Creative Commons</option></select></div>
+    </div>
+    <label style="margin-top:12px">🔎 Search Keywords</label>
+    <input id="keywords" placeholder="Narendra Modi election rally India">
+    <div class="keywords" id="keywordList"></div>
+    <div class="chips">
+        <div class="chip active" data-source="commons" onclick="toggleSource(this)">🌐 Wikimedia Commons (Free)</div>
+        <div class="chip active" data-source="archive" onclick="toggleSource(this)">📚 Internet Archive (Free)</div>
+        <div class="chip active" data-source="youtube" onclick="toggleSource(this)">▶️ YouTube</div>
+        <div class="chip active" data-source="pexels" onclick="toggleSource(this)">🎬 Pexels</div>
+        <div class="chip active" data-source="pixabay" onclick="toggleSource(this)">🎞️ Pixabay</div>
+    </div>
+    <button class="search-button" onclick="searchAll()">🔍 REAL VIDEO SEARCH</button>
+    <div class="notice">✅ Vercel पर deploy करने के बाद /api/proxy की वजह से <b>कोई CORS error नहीं</b> आएगा। Commons/Archive से real politicians की authorized videos मिलती हैं — key नहीं चाहिए।</div>
+</section>
+
+<div class="status" id="status">Headline डालकर Search दबाएँ — API key की ज़रूरत नहीं।</div>
+<div class="loader" id="loader"><div class="spinner"></div><b>Authorized videos खोजी जा रही हैं...</b></div>
+<section class="results" id="results"><div class="empty"><div class="empty-icon">🎬</div><b>अभी कोई result नहीं</b><p style="margin-top:7px">उदाहरण: <b>नरेंद्र मोदी चुनावी सभा</b></p></div></section>
+
+<section class="url-loader">
+    <div class="section-title"><div><h3>🔗 Video URL Load करें</h3><small>YouTube URL भी डाल सकते हैं</small></div></div>
+    <div class="url-row">
+        <input id="authorizedUrl" type="url" placeholder="https://youtu.be/... या https://example.com/video.mp4">
+        <button class="url-load-button" onclick="loadAuthorizedURL()">📥 Load Video</button>
+    </div>
+    <div class="url-help">YouTube URL डालने पर app title लेकर Commons/Archive से authorized real videos ढूँढ देगा। Direct MP4 URL सीधे Cutter में खुलेगी।</div>
+</section>
+
+<section class="cutter-section">
+    <div class="section-title"><div><h3>✂️ 10/30 सेकंड Clip Cutter</h3><small>Processing आपके browser में होती है</small></div></div>
+    <div class="file-area">
+        <div class="file-icon">🎞️</div>
+        <p>Downloaded / legally usable video file चुनें।</p>
+        <label class="file-button" for="videoFile">📂 मोबाइल से Video चुनें</label>
+        <input type="file" id="videoFile" accept="video/*">
+    </div>
+    <div id="cutterPanel">
+        <div class="video-preview"><video id="sourceVideo" controls playsinline></video></div>
+        <div class="video-info" id="videoInfo"></div>
+        <div class="duration-buttons">
+            <button class="duration-button active" data-duration="10" onclick="selectDuration(10)">✂️ 10 सेकंड</button>
+            <button class="duration-button" data-duration="30" onclick="selectDuration(30)">✂️ 30 सेकंड</button>
+            <button class="duration-button" data-duration="custom" onclick="selectDuration('custom')">⚙️ Custom</button>
+        </div>
+        <div class="time-grid">
+            <div><label>🕐 Start Time</label><input id="startTime" type="number" min="0" step="0.1" value="0"></div>
+            <div><label>⏱️ Clip Length</label><input id="clipLength" type="number" min="1" max="600" step="0.1" value="10"></div>
+        </div>
+        <div class="range-box">
+            <label>🎚️ Start Position</label>
+            <input id="startRange" type="range" min="0" max="0" step="0.1" value="0">
+            <div class="range-value"><span>00:00</span><span id="rangeEnd">00:00</span></div>
+        </div>
+        <button class="cut-button" onclick="createClip()">✂️ VIDEO CLIP काटें</button>
+        <button class="reset-button" onclick="resetCutter()">🔄 Reset Cutter</button>
+        <div class="progress-wrap" id="progressWrap"><div class="progress-bg"><div class="progress-bar" id="progressBar"></div></div><div class="progress-text" id="progressText">Preparing...</div></div>
+        <div class="output-box" id="outputBox">
+            <h4>✅ आपका Clip तैयार है</h4>
+            <video class="output-video" id="outputVideo" controls playsinline></video>
+            <a class="download-output" id="downloadOutput" href="#" download="news_clip.mp4">⬇️ MP4 Clip Download करें</a>
+        </div>
+    </div>
+</section>
+
+<footer>Real News Video Finder + 10/30 Sec Clip Cutter<br><br>Archive/Commons videos free-license (CC/Public Domain) में होती हैं।</footer>
+</main>
+
+<div class="modal" id="settingsModal">
+    <div class="modal-box">
+        <div class="modal-head"><h3>⚙️ API Settings (Optional)</h3><button class="close" onclick="closeSettings()">✕</button></div>
+        <label>YouTube Data API v3 Key</label><input id="youtubeKey" type="password" placeholder="AIza...">
+        <label style="margin-top:12px">Pexels API Key</label><input id="pexelsKey" type="password" placeholder="Pexels API Key">
+        <label style="margin-top:12px">Pixabay API Key</label><input id="pixabayKey" type="password" placeholder="Pixabay API Key">
+        <button class="save-button" onclick="saveKeys()">💾 Save करें</button>
+        <div class="help"><b>ज़रूरी नहीं:</b> Commons + Archive बिना key के चलते हैं। YouTube/Pexels/Pixabay के लिए key चाहिए।</div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
+window.NewsClipFFmpeg = { FFmpeg, fetchFile, toBlobURL };
+</script>
+
+<script>
+"use strict";
+const state={youtube:true,pexels:true,pixabay:true,archive:true,commons:true,results:[],sourceFile:null,sourceUrl:null,outputUrl:null,videoDuration:0,ffmpeg:null,ffmpegLoaded:false,quickProcessing:false};
+
+function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
+function openSettings(){document.getElementById("settingsModal").classList.add("show");document.getElementById("youtubeKey").value=localStorage.getItem("yt_api_key")||"";document.getElementById("pexelsKey").value=localStorage.getItem("pexels_api_key")||"";document.getElementById("pixabayKey").value=localStorage.getItem("pixabay_api_key")||"";}
+function closeSettings(){document.getElementById("settingsModal").classList.remove("show");}
+function saveKeys(){const yt=document.getElementById("youtubeKey").value.trim(),px=document.getElementById("pexelsKey").value.trim(),pb=document.getElementById("pixabayKey").value.trim();if(yt)localStorage.setItem("yt_api_key",yt);else localStorage.removeItem("yt_api_key");if(px)localStorage.setItem("pexels_api_key",px);else localStorage.removeItem("pexels_api_key");if(pb)localStorage.setItem("pixabay_api_key",pb);else localStorage.removeItem("pixabay_api_key");closeSettings();showToast("API Keys save हो गईं");}
+function toggleSource(el){const s=el.dataset.source;state[s]=!state[s];el.classList.toggle("active",state[s]);}
+
+/* ========== SAME-ORIGIN PROXY (Vercel पर CORS killer) ========== */
+function ownProxy(u){
+    if(location.protocol==="http:"||location.protocol==="https:")
+        return "/api/proxy?url="+encodeURIComponent(u);
+    return null;
+}
+const JSON_ENDPOINTS=[
+    u=>ownProxy(u),
+    u=>u,
+    u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+    u=>"https://r.jina.ai/"+u
+];
+const BLOB_ENDPOINTS=[
+    u=>ownProxy(u),
+    u=>u,
+    u=>u.replace("https://archive.org/download/","https://cors.archive.org/cors/download/"),
+    u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u)
+];
+
+async function fetchJSONChain(url){
+    let lastErr=null;
+    for(const make of JSON_ENDPOINTS){
+        const target=make(url);
+        if(!target)continue;
+        try{
+            const r=await fetch(target);
+            if(!r.ok)throw new Error("HTTP "+r.status);
+            const t=await r.text();
+            const s=t.indexOf("{");
+            if(s<0)throw new Error("No JSON");
+            return JSON.parse(t.slice(s));
+        }catch(e){lastErr=e;}
+    }
+    throw lastErr||new Error("fetch failed");
+}
+async function fetchVideoBlob(url){
+    let lastErr=null;
+    for(const make of BLOB_ENDPOINTS){
+        const target=make(url);
+        if(!target)continue;
+        try{
+            const r=await fetch(target);
+            if(!r.ok)throw new Error("HTTP "+r.status);
+            const b=await r.blob();
+            if(b.type.startsWith("video/")||b.size>100000)return b;
+            throw new Error("Not a video file");
+        }catch(e){lastErr=e;}
+    }
+    throw lastErr||new Error("fetch failed");
+}
+
+/* ========== KEYWORDS ========== */
+const dictionary={"नरेंद्र मोदी":"Narendra Modi","मोदी":"Narendra Modi","योगी आदित्यनाथ":"Yogi Adityanath","योगी":"Yogi Adityanath","अखिलेश यादव":"Akhilesh Yadav","राहुल गांधी":"Rahul Gandhi","प्रियंका गांधी":"Priyanka Gandhi","ममता बनर्जी":"Mamata Banerjee","अरविंद केजरीवाल":"Arvind Kejriwal","चुनावी सभा":"election rally","चुनाव":"election","जनसभा":"public rally","रैली":"political rally","भाषण":"speech","संबोधन":"address speech","प्रेस कॉन्फ्रेंस":"press conference","संसद":"Indian Parliament","राज्यसभा":"Rajya Sabha","लोकसभा":"Lok Sabha","विधानसभा":"state assembly","उत्तर प्रदेश":"Uttar Pradesh India","यूपी":"Uttar Pradesh India","बिहार":"Bihar India","दिल्ली":"Delhi India","महाराष्ट्र":"Maharashtra India","भारत":"India","सरकार":"Indian government","मंत्री":"Indian minister","किसान":"Indian farmers","पुलिस":"Indian police","प्रदर्शन":"India protest","धरना":"India protest","बजट":"India budget","एलपीजी":"LPG India","गैस":"LPG cylinder India","रेलवे":"Indian railway","सुप्रीम कोर्ट":"Supreme Court India"};
+function makeKeywords(){
+    let text=document.getElementById("headline").value.trim();
+    if(!text)return "";
+    let q=text.toLowerCase();
+    Object.keys(dictionary).sort((a,b)=>b.length-a.length).forEach(k=>{q=q.replaceAll(k.toLowerCase(),dictionary[k]);});
+    ["में","का","की","के","से","पर","और","ने","को","यह","है","था","थी","थे","एक","बड़ा","बड़ी","आज","अब"].forEach(w=>{q=q.replaceAll(w," ");});
+    return q.replace(/[।,!?:;"'()]/g," ").replace(/\s+/g," ").trim();
+}
+function showKeywords(){const q=document.getElementById("keywords").value.trim();document.getElementById("keywordList").innerHTML=q.split(" ").filter(Boolean).slice(0,15).map(w=>`<span class="keyword">${escapeHTML(w)}</span>`).join("");}
+document.getElementById("headline").addEventListener("input",()=>{const q=makeKeywords();if(q){document.getElementById("keywords").value=q;showKeywords();}});
+document.getElementById("keywords").addEventListener("input",showKeywords);
+
+/* ========== SEARCH ALL ========== */
+async function searchAll(){
+    const headline=document.getElementById("headline").value.trim();
+    let query=document.getElementById("keywords").value.trim();
+    if(!headline){alert("पहले headline डालें");return;}
+    if(!query){query=makeKeywords();document.getElementById("keywords").value=query;}
+    showKeywords();
+    document.getElementById("loader").style.display="block";
+    document.getElementById("results").innerHTML="";
+    document.getElementById("status").textContent=`"${query}" की authorized videos खोजी जा रही हैं...`;
+    state.results=[];
+    const tasks=[];
+    if(state.commons)tasks.push(searchCommons(query));
+    if(state.archive)tasks.push(searchArchive(query));
+    const yt=localStorage.getItem("yt_api_key"),px=localStorage.getItem("pexels_api_key"),pb=localStorage.getItem("pixabay_api_key");
+    if(state.youtube&&yt)tasks.push(searchYouTube(query,yt));
+    if(state.pexels&&px)tasks.push(searchPexels(query,px));
+    if(state.pixabay&&pb)tasks.push(searchPixabay(query,pb));
+    const res=await Promise.allSettled(tasks);
+    res.forEach(r=>{if(r.status==="fulfilled")state.results.push(...r.value);});
+    renderResults();
+    document.getElementById("loader").style.display="none";
+}
+
+/* ========== WIKIMEDIA COMMONS ========== */
+async function searchCommons(query){
+    try{
+        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:video")+"&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=480";
+        const data=await fetchJSONChain(url);
+        const pages=(data.query&&data.query.pages)||{};
+        return Object.values(pages).filter(p=>p.imageinfo&&p.imageinfo[0].mime&&p.imageinfo[0].mime.startsWith("video/")).map(p=>{
+            const ii=p.imageinfo[0];
+            return {type:"direct",source:"Wikimedia",id:p.pageid,title:(p.title||"").replace("File:","").replace(/\.[a-z0-9]+$/i,""),channel:"Wikimedia Commons (CC)",thumbnail:ii.thumburl||"",videoUrl:ii.url,pageUrl:ii.descriptionurl||ii.url};
+        });
+    }catch(e){console.error(e);return [];}
+}
+
+/* ========== INTERNET ARCHIVE ========== */
+async function searchArchive(query){
+    try{
+        const url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(movies)")+"&fl[]=identifier&fl[]=title&rows=10&page=1&output=json";
+        const data=await fetchJSONChain(url);
+        const docs=(data.response&&data.response.docs)||[];
+        const metas=await Promise.allSettled(docs.slice(0,6).map(d=>fetchJSONChain("https://archive.org/metadata/"+d.identifier)));
+        const out=[];
+        metas.forEach((m,i)=>{
+            if(m.status!=="fulfilled")return;
+            const meta=m.value,files=meta.files||[],id=docs[i].identifier;
+            const vid=files.find(f=>f.format==="MPEG4"||/\.mp4$/i.test(f.name))||files.find(f=>/\.(webm|ogv)$/i.test(f.name));
+            if(!vid)return;
+            const th=files.find(f=>f.format==="Thumbnail"||/\.(jpg|png)$/i.test(f.name));
+            out.push({type:"direct",source:"Archive.org",id:id,title:docs[i].title||id,channel:"Internet Archive (Free)",thumbnail:th?("https://archive.org/download/"+id+"/"+encodeURIComponent(th.name)):"",videoUrl:"https://archive.org/download/"+id+"/"+encodeURIComponent(vid.name),pageUrl:"https://archive.org/details/"+id});
+        });
+        return out;
+    }catch(e){console.error(e);return [];}
+}
+
+/* ========== YOUTUBE / PEXELS / PIXABAY ========== */
+function getPublishedAfter(){const f=document.getElementById("dateFilter").value;if(f==="any")return "";const d=new Date();if(f==="day")d.setDate(d.getDate()-1);if(f==="week")d.setDate(d.getDate()-7);if(f==="month")d.setMonth(d.getMonth()-1);return d.toISOString();}
+async function searchYouTube(query,key){
+    const params=new URLSearchParams({key:key,part:"snippet",q:query,type:"video",maxResults:"15",regionCode:"IN",videoEmbeddable:"true"});
+    const pub=getPublishedAfter();if(pub)params.set("publishedAfter",pub);
+    const dur=document.getElementById("durationFilter").value;if(dur!=="any")params.set("videoDuration",dur);
+    if(document.getElementById("licenseFilter").value==="creativeCommon")params.set("videoLicense","creativeCommon");
+    try{
+        const r=await fetch("https://www.googleapis.com/youtube/v3/search?"+params.toString());
+        if(!r.ok)return [];
+        const d=await r.json();
+        return (d.items||[]).map(it=>{const id=it.id&&it.id.videoId;if(!id)return null;const s=it.snippet||{};return {type:"youtube",source:"YouTube",id:id,title:s.title||"YouTube Video",channel:s.channelTitle||"YouTube",published:s.publishedAt||"",thumbnail:(s.thumbnails&&s.thumbnails.high&&s.thumbnails.high.url)||"",pageUrl:"https://www.youtube.com/watch?v="+id};}).filter(Boolean);
+    }catch(e){console.error(e);return [];}
+}
+async function searchPexels(query,key){
+    let url="https://api.pexels.com/v1/videos/search?query="+encodeURIComponent(query)+"&per_page=15";
+    const o=document.getElementById("orientation").value;if(o!=="any")url+="&orientation="+encodeURIComponent(o);
+    try{
+        const r=await fetch(url,{headers:{Authorization:key}});
+        if(!r.ok)return [];
+        const d=await r.json();
+        return (d.videos||[]).map(v=>{const f=(v.video_files||[]).find(x=>x.quality==="hd")||(v.video_files||[])[0];if(!f)return null;return {type:"direct",source:"Pexels",id:v.id,title:"Pexels Video",channel:(v.user&&v.user.name)||"Pexels",thumbnail:v.image||"",videoUrl:f.link||"",pageUrl:v.url||""};}).filter(Boolean);
+    }catch(e){console.error(e);return [];}
+}
+async function searchPixabay(query,key){
+    try{
+        const r=await fetch("https://pixabay.com/api/videos/?key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&safesearch=true&per_page=15");
+        if(!r.ok)return [];
+        const d=await r.json();
+        return (d.hits||[]).map(v=>{const f=v.videos&&(v.videos.medium||v.videos.small||v.videos.tiny);if(!f)return null;return {type:"direct",source:"Pixabay",id:v.id,title:"Pixabay Video #"+v.id,channel:v.user||"Pixabay",thumbnail:f.thumbnail||"",videoUrl:f.url||"",pageUrl:v.pageURL||""};}).filter(Boolean);
+    }catch(e){console.error(e);return [];}
+}
+
+/* ========== AUTHORIZED ALTERNATIVE ========== */
+async function getYoutubeTopic(url){
+    try{
+        const d=await fetchJSONChain("https://noembed.com/embed?url="+encodeURIComponent(url));
+        if(d.title)return d.title;
+    }catch(e){}
+    return document.getElementById("keywords").value.trim()||document.getElementById("headline").value.trim()||"Narendra Modi speech India";
+}
+async function findAuthorizedAlternative(title,replace){
+    showToast("📚 इसी topic की authorized videos खोज रहा हूँ...");
+    document.getElementById("loader").style.display="block";
+    const clean=String(title).replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+    const [a,b]=await Promise.allSettled([searchCommons(clean),searchArchive(clean)]);
+    const found=[];
+    if(a.status==="fulfilled")found.push(...a.value);
+    if(b.status==="fulfilled")found.push(...b.value);
+    document.getElementById("loader").style.display="none";
+    if(!found.length){showToast("❌ authorized video नहीं मिली");return;}
+    state.results=replace?found:found.concat(state.results);
+    renderResults();
+    document.getElementById("results").scrollIntoView({behavior:"smooth"});
+    showToast(`✅ ${found.length} authorized videos — ⚡10/30 sec clip download करें`);
+}
+
+/* ========== RENDER ========== */
+function renderResults(){
+    const c=document.getElementById("results");
+    if(!state.results.length){
+        c.innerHTML=`<div class="empty"><div class="empty-icon">😕</div><b>कोई result नहीं</b><p style="margin-top:8px">Try: <b>Narendra Modi speech</b></p></div>`;
+        document.getElementById("status").textContent="कोई video नहीं मिला।";
+        return;
+    }
+    document.getElementById("status").textContent=`${state.results.length} videos मिलीं — direct sources पर ⚡10/30 sec buttons दबाएँ।`;
+    c.innerHTML=state.results.map((v,i)=>createCard(v,i)).join("");
+}
+function createCard(video,index){
+    const title=escapeHTML(video.title),channel=escapeHTML(video.channel),source=escapeHTML(video.source),cardId="qc_"+index;
+    let media=video.type==="youtube"
+        ?`<img src="${escapeAttr(video.thumbnail)}" alt="" loading="lazy"><div class="youtube-play"><span>▶</span></div>`
+        :`<video controls preload="metadata" poster="${escapeAttr(video.thumbnail)}" src="${escapeAttr(video.videoUrl)}"></video>`;
+    let buttons;
+    if(video.type==="youtube"){
+        buttons=`
+        <a class="preview" href="${escapeAttr(video.pageUrl)}" target="_blank" rel="noopener">▶️ Preview</a>
+        <a class="source" href="${escapeAttr(video.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
+        <button class="copy" onclick="copyURL('${escapeJS(video.pageUrl)}')">📋 Copy URL</button>
+        <button class="use-cutter" onclick="showYouTubeInfo()">✂️ Cutter कैसे लें?</button>
+        <button class="find-auth" onclick="findAuthorizedAlternative('${escapeJS(video.title)}',true)">📚 Authorized 10/30s Clip खोजें (Free)</button>`;
+    }else{
+        buttons=`
+        <button class="quick-clip-10" onclick="quickClip('${escapeJS(video.videoUrl)}',10,'${cardId}')">⚡ 10 sec Clip</button>
+        <button class="quick-clip-30" onclick="quickClip('${escapeJS(video.videoUrl)}',30,'${cardId}')">⚡ 30 sec Clip</button>
+        <a class="preview" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">▶️ Preview</a>
+        <a class="source" href="${escapeAttr(video.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
+        <a class="direct-download" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">⬇️ Full Download</a>
+        <button class="use-cutter" onclick="loadRemoteVideo('${escapeJS(video.videoUrl)}')">✂️ Advanced Cutter में लें</button>`;
+    }
+    return `<article class="video-card"><div class="thumbnail">${media}<span class="badge">${source}</span></div><div class="card-body"><div class="card-title">${title}</div><div class="meta">👤 ${channel}${video.published?`<br>📅 ${formatDate(video.published)}`:""}</div><div class="card-buttons">${buttons}</div><div class="quick-progress" id="prog_${cardId}"><div id="text_${cardId}">तैयारी...</div><div class="bar"><div class="fill" id="fill_${cardId}"></div></div></div></div></article>`;
+}
+
+/* ========== QUICK 10/30 SEC CLIP ========== */
+async function quickClip(videoUrl,seconds,cardId){
+    if(state.quickProcessing){showToast("एक clip बन रही है, प्रतीक्षा करें");return;}
+    state.quickProcessing=true;
+    const prog=document.getElementById("prog_"+cardId),text=document.getElementById("text_"+cardId),fill=document.getElementById("fill_"+cardId);
+    prog.classList.add("show");fill.style.width="5%";
+    text.textContent=`📥 ${seconds} sec clip के लिए video download...`;
+    try{
+        const blob=await fetchVideoBlob(videoUrl);
+        fill.style.width="30%";text.textContent="✂️ FFmpeg engine लोड...";
+        await loadFFmpeg();
+        const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
+        const inN="qin_"+Date.now()+".mp4",outN="qout_"+Date.now()+".mp4";
+        fill.style.width="50%";text.textContent="📤 Processing...";
+        await ffmpeg.writeFile(inN,await fetchFile(blob));
+        fill.style.width="60%";text.textContent=`✂️ ${seconds} सेकंड काटे जा रहे हैं...`;
+        await ffmpeg.exec(["-ss","0","-i",inN,"-t",String(seconds),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
+        fill.style.width="90%";text.textContent="💾 MP4 तैयार...";
+        const data=await ffmpeg.readFile(outN);
+        const outBlob=new Blob([data.buffer],{type:"video/mp4"});
+        try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
+        fill.style.width="100%";text.textContent=`✅ ${seconds} sec clip download हो रही है!`;
+        const url=URL.createObjectURL(outBlob);
+        const a=document.createElement("a");a.href=url;a.download=`news_clip_${seconds}sec.mp4`;
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),5000);
+        showToast(`✅ ${seconds} सेकंड का clip download हो गया`);
+    }catch(err){
+        console.error(err);
+        fill.style.width="100%";text.textContent="❌ Error — Advanced Cutter try करें";
+        alert("Quick clip error: "+err.message+"\n\n1) Vercel पर deploy करके try करें\n2) 'Advanced Cutter में लें' use करें");
+    }finally{
+        state.quickProcessing=false;
+        setTimeout(()=>{prog.classList.remove("show");fill.style.width="0%";},3500);
+    }
+}
+
+/* ========== URL LOADER ========== */
+async function loadAuthorizedURL(){
+    const url=document.getElementById("authorizedUrl").value.trim();
+    if(!url){alert("पहले video URL डालें।");return;}
+    if(/youtube\.com|youtu\.be/i.test(url)){
+        showToast("YouTube MP4 allowed नहीं — authorized alternatives खोज रहा हूँ...");
+        const topic=await getYoutubeTopic(url);
+        await findAuthorizedAlternative(topic,true);
+        return;
+    }
+    await loadRemoteVideo(url);
+}
+async function loadRemoteVideo(url){
+    try{
+        showToast("Video Cutter में load हो रही है...");
+        const blob=await fetchVideoBlob(url);
+        loadLocalVideo(new File([blob],"authorized_video.mp4",{type:blob.type||"video/mp4"}));
+        document.querySelector(".cutter-section").scrollIntoView({behavior:"smooth"});
+        showToast("✅ Video Cutter में आ गई");
+    }catch(err){
+        console.error(err);
+        alert("Video load नहीं हो सकी: "+err.message+"\n\nVideo को पहले मोबाइल में download करें और 'मोबाइल से Video चुनें' दबाएँ।");
+    }
+}
+
+async function copyURL(url){
+    try{
+        if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(url);}
+        else{const t=document.createElement("textarea");t.value=url;t.style.position="fixed";t.style.opacity="0";document.body.appendChild(t);t.focus();t.select();document.execCommand("copy");t.remove();}
+        showToast("✅ URL copy हो गया");
+    }catch(e){prompt("URL copy करें:",url);}
+}
+function showYouTubeInfo(){alert("YouTube video को directly download करना allowed नहीं है।\n\n✅ '📚 Authorized 10/30s Clip खोजें' दबाएँ — app Commons/Archive से उसी topic की real authorized video लाकर 10/30 sec clip download करा देगा।");}
+
+/* ========== CUTTER ========== */
+document.getElementById("videoFile").addEventListener("change",e=>{const f=e.target.files[0];if(f)loadLocalVideo(f);});
+function loadLocalVideo(file){
+    state.sourceFile=file;
+    if(state.sourceUrl)URL.revokeObjectURL(state.sourceUrl);
+    state.sourceUrl=URL.createObjectURL(file);
+    const v=document.getElementById("sourceVideo");
+    v.src=state.sourceUrl;
+    document.getElementById("cutterPanel").style.display="block";
+    document.getElementById("outputBox").style.display="none";
+    v.load();
+    v.onloadedmetadata=()=>initializeCutter(v.duration);
+}
+function initializeCutter(d){
+    state.videoDuration=Number(d)||0;
+    const r=document.getElementById("startRange");
+    r.max=state.videoDuration;r.value=0;
+    document.getElementById("startTime").value=0;
+    document.getElementById("clipLength").value=Math.min(10,state.videoDuration);
+    document.getElementById("rangeEnd").textContent=formatTime(state.videoDuration);
+    document.getElementById("videoInfo").textContent="Duration: "+formatTime(state.videoDuration);
+}
+function selectDuration(d){
+    document.querySelectorAll(".duration-button").forEach(b=>b.classList.remove("active"));
+    const b=document.querySelector(`[data-duration="${d}"]`);if(b)b.classList.add("active");
+    if(d!=="custom")document.getElementById("clipLength").value=Math.min(Number(d),state.videoDuration);
+}
+document.getElementById("startRange").addEventListener("input",e=>{document.getElementById("startTime").value=e.target.value;});
+document.getElementById("startTime").addEventListener("input",e=>{let v=Number(e.target.value);if(!Number.isFinite(v))v=0;v=Math.max(0,Math.min(v,state.videoDuration));e.target.value=v;document.getElementById("startRange").value=v;});
+
+async function createClip(){
+    if(!state.sourceFile){alert("पहले Video चुनें।");return;}
+    let start=Number(document.getElementById("startTime").value);
+    let length=Number(document.getElementById("clipLength").value);
+    if(!Number.isFinite(start)||!Number.isFinite(length)||length<=0){alert("Start/Length सही डालें।");return;}
+    if(start+length>state.videoDuration){length=state.videoDuration-start;document.getElementById("clipLength").value=length;}
+    if(length<=0){alert("Duration सही नहीं।");return;}
+    try{
+        await loadFFmpeg();
+        const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
+        setProgress(5,"Engine तैयार...");
+        const inN="in_"+Date.now()+".mp4",outN="clip_"+Date.now()+".mp4";
+        await ffmpeg.writeFile(inN,await fetchFile(state.sourceFile));
+        setProgress(20,"Clip काटी जा रही है...");
+        await ffmpeg.exec(["-ss",String(start),"-i",inN,"-t",String(length),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
+        setProgress(90,"MP4 तैयार...");
+        const data=await ffmpeg.readFile(outN);
+        const blob=new Blob([data.buffer],{type:"video/mp4"});
+        if(state.outputUrl)URL.revokeObjectURL(state.outputUrl);
+        state.outputUrl=URL.createObjectURL(blob);
+        document.getElementById("outputVideo").src=state.outputUrl;
+        const dl=document.getElementById("downloadOutput");
+        dl.href=state.outputUrl;dl.download="news_clip_"+Math.round(length)+"sec.mp4";
+        document.getElementById("outputBox").style.display="block";
+        setProgress(100,"✅ Clip तैयार");
+        try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
+        showToast("✅ Clip तैयार हो गई");
+    }catch(err){
+        console.error(err);setProgress(0,"❌ Failed");
+        alert("Clip नहीं बन सकी। छोटी video से test करें।");
+    }
+}
+async function loadFFmpeg(){
+    if(state.ffmpegLoaded&&state.ffmpeg)return;
+    if(!window.NewsClipFFmpeg)throw new Error("FFmpeg library load नहीं हुई");
+    const {FFmpeg,toBlobURL}=window.NewsClipFFmpeg;
+    state.ffmpeg=new FFmpeg();
+    const base="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+    await state.ffmpeg.load({coreURL:await toBlobURL(base+"/ffmpeg-core.js","text/javascript"),wasmURL:await toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")});
+    state.ffmpegLoaded=true;
+}
+function setProgress(p,t){document.getElementById("progressWrap").style.display="block";document.getElementById("progressBar").style.width=p+"%";document.getElementById("progressText").textContent=t;}
+function resetCutter(){
+    if(state.sourceUrl)URL.revokeObjectURL(state.sourceUrl);
+    if(state.outputUrl)URL.revokeObjectURL(state.outputUrl);
+    state.sourceFile=null;state.sourceUrl=null;state.outputUrl=null;state.videoDuration=0;
+    document.getElementById("videoFile").value="";
+    document.getElementById("sourceVideo").removeAttribute("src");
+    document.getElementById("sourceVideo").load();
+    document.getElementById("cutterPanel").style.display="none";
+    document.getElementById("outputBox").style.display="none";
+    document.getElementById("progressWrap").style.display="none";
+}
+
+/* ========== HELPERS ========== */
+function formatDate(d){try{return new Date(d).toLocaleDateString("hi-IN",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return "";}}
+function formatTime(s){s=Math.max(0,Number(s)||0);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0");}
+function escapeHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function escapeAttr(v){return escapeHTML(v);}
+function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g,"\\n").replace(/\r/g,"\\r");}
+
+document.getElementById("headline").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();searchAll();}});
+document.getElementById("settingsModal").addEventListener("click",e=>{if(e.target.id==="settingsModal")closeSettings();});
+
+/* ========== NETWORK SELF-TEST ========== */
+window.addEventListener("load",async ()=>{
+    try{
+        await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&meta=siteinfo");
+    }catch(e){
+        document.getElementById("status").textContent="⚠️ इस preview में internet fetch block है — Chrome browser में खोलें।";
+    }
+});
+</script>
+</body>
+</html>
