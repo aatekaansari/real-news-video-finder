@@ -589,7 +589,14 @@ async function loadFFmpeg(){
     const {FFmpeg,toBlobURL}=window.NewsClipFFmpeg;
     state.ffmpeg=new FFmpeg();
     const base="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
-    await state.ffmpeg.load({coreURL:await toBlobURL(base+"/ffmpeg-core.js","text/javascript"),wasmURL:await toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")});
+    let workerURL=null;
+    try{
+        const w=await fetch("/worker.js",{method:"HEAD"});
+        if(w.ok)workerURL=location.origin+"/worker.js";
+    }catch(e){}
+    const opts={coreURL:await toBlobURL(base+"/ffmpeg-core.js","text/javascript"),wasmURL:await toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")};
+    if(workerURL)opts.classWorkerURL=workerURL;
+    await state.ffmpeg.load(opts);
     state.ffmpegLoaded=true;
 }
 function setProgress(p,t){document.getElementById("progressWrap").style.display="block";document.getElementById("progressBar").style.width=p+"%";document.getElementById("progressText").textContent=t;}
