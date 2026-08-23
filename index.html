@@ -58,6 +58,7 @@ textarea{min-height:78px;resize:vertical}
 .direct-download{background:#ecfdf3;color:#15803d;border-color:#bbf7d0;grid-column:1/-1}
 .quick-clip-10{background:#fef3c7;color:#b45309;border-color:#fcd34d}
 .quick-clip-30{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
+.quick-gif{background:#fdf2f8;color:#be185d;border-color:#fbcfe8;grid-column:1/-1}
 .find-auth{background:#fef3c7;color:#92400e;border-color:#fcd34d;grid-column:1/-1}
 .quick-progress{grid-column:1/-1;margin-top:6px;padding:8px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;font-size:10px;text-align:center;color:var(--muted);display:none}
 .quick-progress.show{display:block}
@@ -118,7 +119,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <div class="header-inner">
     <div class="brand">
         <div class="logo">▶</div>
-        <div><h1>Real News Video Finder</h1><small>Search → Authorized Video → 10/30s Clip</small></div>
+        <div><h1>Real News Video Finder</h1><small>Search → Video → MP4 Clip / GIF</small></div>
     </div>
     <button class="settings-button" onclick="openSettings()">⚙️</button>
 </div>
@@ -127,8 +128,8 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <main class="container">
 
 <section class="hero">
-    <h2>📰 Headline डालें, Real Video पाएँ, Clip Download करें</h2>
-    <p>Wikimedia Commons + Internet Archive से <b>authorized real news videos</b> (बिना API key)। हर direct video पर ⚡10 sec / ⚡30 sec clip download। YouTube URL डालने पर app खुद authorized alternatives ढूँढता है।</p>
+    <h2>📰 Headline डालें, Real Video पाएँ</h2>
+    <p>हर direct video से download करें: ⚡ <b>10 sec MP4</b> • ⚡ <b>30 sec MP4</b> • 🎞️ <b>5 sec GIF</b> (चलती हुई image वाली file)। 🕰️ Latest/Oldest क्रम भी चुन सकते हैं। Sources: 📺 TV News Archive + 🌐 Wikimedia Commons (authorized, बिना API key)।</p>
 </section>
 
 <section class="search-card">
@@ -136,6 +137,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
     <textarea id="headline" placeholder="उदाहरण: नरेंद्र मोदी की चुनावी सभा में बड़ा ऐलान"></textarea>
     <div class="grid">
         <div><label>📅 समय</label><select id="dateFilter"><option value="any">किसी भी तारीख</option><option value="day">पिछले 24 घंटे</option><option value="week">पिछला सप्ताह</option><option value="month">पिछला महीना</option></select></div>
+        <div><label>🕰️ क्रम (Sort)</label><select id="sortOrder"><option value="latest">Latest पहले</option><option value="oldest">Oldest पहले</option></select></div>
         <div><label>⏱️ Duration</label><select id="durationFilter"><option value="any">कोई भी</option><option value="short">1 मिनट तक</option><option value="medium">1–4 मिनट</option><option value="long">4+ मिनट</option></select></div>
         <div><label>📺 Format</label><select id="orientation"><option value="any">कोई भी</option><option value="landscape">16:9</option><option value="portrait">9:16</option></select></div>
         <div><label>🔐 License</label><select id="licenseFilter"><option value="any">सभी YouTube videos</option><option value="creativeCommon">Creative Commons</option></select></div>
@@ -144,6 +146,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
     <input id="keywords" placeholder="Narendra Modi election rally India">
     <div class="keywords" id="keywordList"></div>
     <div class="chips">
+        <div class="chip active" data-source="tvnews" onclick="toggleSource(this)">📺 TV News Archive</div>
         <div class="chip active" data-source="commons" onclick="toggleSource(this)">🌐 Wikimedia Commons (Free)</div>
         <div class="chip active" data-source="archive" onclick="toggleSource(this)">📚 Internet Archive (Free)</div>
         <div class="chip active" data-source="youtube" onclick="toggleSource(this)">▶️ YouTube</div>
@@ -151,7 +154,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
         <div class="chip active" data-source="pixabay" onclick="toggleSource(this)">🎞️ Pixabay</div>
     </div>
     <button class="search-button" onclick="searchAll()">🔍 REAL VIDEO SEARCH</button>
-    <div class="notice">✅ Vercel पर deploy करने के बाद /api/proxy की वजह से <b>कोई CORS error नहीं</b> आएगा। Commons/Archive से real politicians की authorized videos मिलती हैं — key नहीं चाहिए।</div>
+    <div class="notice">✅ Vercel proxy की वजह से कोई CORS error नहीं। हर direct video पर ⚡10s / ⚡30s MP4 और 🎞️ 5s GIF download। 🕰️ Latest/Oldest क्रम चुनें। ⚖️ Clips/GIF का उपयोग केवल news reporting / fair dealing (Copyright Act धारा 52) या free-license के तहत करें। YouTube rip करना illegal है — यह site उसे support नहीं करती।</div>
 </section>
 
 <div class="status" id="status">Headline डालकर Search दबाएँ — API key की ज़रूरत नहीं।</div>
@@ -203,7 +206,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
     </div>
 </section>
 
-<footer>Real News Video Finder + 10/30 Sec Clip Cutter<br><br>Archive/Commons videos free-license (CC/Public Domain) में होती हैं।</footer>
+<footer>Real News Video Finder — MP4 Clip + GIF Downloader<br><br>Archive/Commons videos free-license (CC/Public Domain) में होती हैं। उपयोग news reporting/fair dealing के तहत करें।</footer>
 </main>
 
 <div class="modal" id="settingsModal">
@@ -213,7 +216,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
         <label style="margin-top:12px">Pexels API Key</label><input id="pexelsKey" type="password" placeholder="Pexels API Key">
         <label style="margin-top:12px">Pixabay API Key</label><input id="pixabayKey" type="password" placeholder="Pixabay API Key">
         <button class="save-button" onclick="saveKeys()">💾 Save करें</button>
-        <div class="help"><b>ज़रूरी नहीं:</b> Commons + Archive बिना key के चलते हैं। YouTube/Pexels/Pixabay के लिए key चाहिए।</div>
+        <div class="help"><b>ज़रूरी नहीं:</b> TV News Archive + Commons + Archive बिना key के चलते हैं। YouTube/Pexels/Pixabay के लिए key चाहिए।</div>
     </div>
 </div>
 
@@ -227,7 +230,7 @@ window.NewsClipFFmpeg = { FFmpeg, fetchFile, toBlobURL };
 
 <script>
 "use strict";
-const state={youtube:true,pexels:true,pixabay:true,archive:true,commons:true,results:[],sourceFile:null,sourceUrl:null,outputUrl:null,videoDuration:0,ffmpeg:null,ffmpegLoaded:false,quickProcessing:false};
+const state={youtube:true,pexels:true,pixabay:true,archive:true,commons:true,tvnews:true,results:[],sourceFile:null,sourceUrl:null,outputUrl:null,videoDuration:0,ffmpeg:null,ffmpegLoaded:false,quickProcessing:false};
 
 function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
 function openSettings(){document.getElementById("settingsModal").classList.add("show");document.getElementById("youtubeKey").value=localStorage.getItem("yt_api_key")||"";document.getElementById("pexelsKey").value=localStorage.getItem("pexels_api_key")||"";document.getElementById("pixabayKey").value=localStorage.getItem("pixabay_api_key")||"";}
@@ -235,7 +238,7 @@ function closeSettings(){document.getElementById("settingsModal").classList.remo
 function saveKeys(){const yt=document.getElementById("youtubeKey").value.trim(),px=document.getElementById("pexelsKey").value.trim(),pb=document.getElementById("pixabayKey").value.trim();if(yt)localStorage.setItem("yt_api_key",yt);else localStorage.removeItem("yt_api_key");if(px)localStorage.setItem("pexels_api_key",px);else localStorage.removeItem("pexels_api_key");if(pb)localStorage.setItem("pixabay_api_key",pb);else localStorage.removeItem("pixabay_api_key");closeSettings();showToast("API Keys save हो गईं");}
 function toggleSource(el){const s=el.dataset.source;state[s]=!state[s];el.classList.toggle("active",state[s]);}
 
-/* ========== SAME-ORIGIN PROXY (Vercel पर CORS killer) ========== */
+/* ========== SAME-ORIGIN PROXY ========== */
 function ownProxy(u){
     if(location.protocol==="http:"||location.protocol==="https:")
         return "/api/proxy?url="+encodeURIComponent(u);
@@ -300,6 +303,9 @@ function showKeywords(){const q=document.getElementById("keywords").value.trim()
 document.getElementById("headline").addEventListener("input",()=>{const q=makeKeywords();if(q){document.getElementById("keywords").value=q;showKeywords();}});
 document.getElementById("keywords").addEventListener("input",showKeywords);
 
+/* ========== SORT ========== */
+function isLatest(){return document.getElementById("sortOrder").value!=="oldest";}
+
 /* ========== SEARCH ALL ========== */
 async function searchAll(){
     const headline=document.getElementById("headline").value.trim();
@@ -312,8 +318,8 @@ async function searchAll(){
     document.getElementById("status").textContent=`"${query}" की authorized videos खोजी जा रही हैं...`;
     state.results=[];
     const tasks=[];
+    if(state.tvnews||state.archive)tasks.push(searchArchive(query));
     if(state.commons)tasks.push(searchCommons(query));
-    if(state.archive)tasks.push(searchArchive(query));
     const yt=localStorage.getItem("yt_api_key"),px=localStorage.getItem("pexels_api_key"),pb=localStorage.getItem("pixabay_api_key");
     if(state.youtube&&yt)tasks.push(searchYouTube(query,yt));
     if(state.pexels&&px)tasks.push(searchPexels(query,px));
@@ -324,10 +330,11 @@ async function searchAll(){
     document.getElementById("loader").style.display="none";
 }
 
-/* ========== WIKIMEDIA COMMONS ========== */
+/* ========== WIKIMEDIA COMMONS (latest/oldest sort) ========== */
 async function searchCommons(query){
     try{
-        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:video")+"&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=480";
+        let url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:video")+"&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=480";
+        url+="&gsrsort="+(isLatest()?"create_timestamp_desc":"create_timestamp_asc");
         const data=await fetchJSONChain(url);
         const pages=(data.query&&data.query.pages)||{};
         return Object.values(pages).filter(p=>p.imageinfo&&p.imageinfo[0].mime&&p.imageinfo[0].mime.startsWith("video/")).map(p=>{
@@ -337,10 +344,12 @@ async function searchCommons(query){
     }catch(e){console.error(e);return [];}
 }
 
-/* ========== INTERNET ARCHIVE ========== */
+/* ========== INTERNET ARCHIVE + TV NEWS (latest/oldest sort) ========== */
 async function searchArchive(query){
     try{
-        const url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(movies)")+"&fl[]=identifier&fl[]=title&rows=10&page=1&output=json";
+        const tv=state.tvnews?" AND collection:(tvnews OR tv OR television OR news)":"";
+        let url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(movies)"+tv)+"&fl[]=identifier&fl[]=title&rows=12&page=1&output=json";
+        url+="&sort%5B%5D="+(isLatest()?"publicdate%20desc":"publicdate%20asc");
         const data=await fetchJSONChain(url);
         const docs=(data.response&&data.response.docs)||[];
         const metas=await Promise.allSettled(docs.slice(0,6).map(d=>fetchJSONChain("https://archive.org/metadata/"+d.identifier)));
@@ -351,7 +360,7 @@ async function searchArchive(query){
             const vid=files.find(f=>f.format==="MPEG4"||/\.mp4$/i.test(f.name))||files.find(f=>/\.(webm|ogv)$/i.test(f.name));
             if(!vid)return;
             const th=files.find(f=>f.format==="Thumbnail"||/\.(jpg|png)$/i.test(f.name));
-            out.push({type:"direct",source:"Archive.org",id:id,title:docs[i].title||id,channel:"Internet Archive (Free)",thumbnail:th?("https://archive.org/download/"+id+"/"+encodeURIComponent(th.name)):"",videoUrl:"https://archive.org/download/"+id+"/"+encodeURIComponent(vid.name),pageUrl:"https://archive.org/details/"+id});
+            out.push({type:"direct",source:state.tvnews?"TV News Archive":"Archive.org",id:id,title:docs[i].title||id,channel:"Internet Archive (Free)",thumbnail:th?("https://archive.org/download/"+id+"/"+encodeURIComponent(th.name)):"",videoUrl:"https://archive.org/download/"+id+"/"+encodeURIComponent(vid.name),pageUrl:"https://archive.org/details/"+id});
         });
         return out;
     }catch(e){console.error(e);return [];}
@@ -411,7 +420,7 @@ async function findAuthorizedAlternative(title,replace){
     state.results=replace?found:found.concat(state.results);
     renderResults();
     document.getElementById("results").scrollIntoView({behavior:"smooth"});
-    showToast(`✅ ${found.length} authorized videos — ⚡10/30 sec clip download करें`);
+    showToast(`✅ ${found.length} authorized videos — MP4/GIF download करें`);
 }
 
 /* ========== RENDER ========== */
@@ -422,7 +431,7 @@ function renderResults(){
         document.getElementById("status").textContent="कोई video नहीं मिला।";
         return;
     }
-    document.getElementById("status").textContent=`${state.results.length} videos मिलीं — direct sources पर ⚡10/30 sec buttons दबाएँ।`;
+    document.getElementById("status").textContent=`${state.results.length} videos मिलीं — ⚡10/30s MP4 या 🎞️ GIF download करें।`;
     c.innerHTML=state.results.map((v,i)=>createCard(v,i)).join("");
 }
 function createCard(video,index){
@@ -442,6 +451,7 @@ function createCard(video,index){
         buttons=`
         <button class="quick-clip-10" onclick="quickClip('${escapeJS(video.videoUrl)}',10,'${cardId}')">⚡ 10 sec Clip</button>
         <button class="quick-clip-30" onclick="quickClip('${escapeJS(video.videoUrl)}',30,'${cardId}')">⚡ 30 sec Clip</button>
+        <button class="quick-gif" onclick="quickGif('${escapeJS(video.videoUrl)}','${cardId}')">🎞️ 5 sec GIF Download</button>
         <a class="preview" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">▶️ Preview</a>
         <a class="source" href="${escapeAttr(video.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
         <a class="direct-download" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">⬇️ Full Download</a>
@@ -450,7 +460,7 @@ function createCard(video,index){
     return `<article class="video-card"><div class="thumbnail">${media}<span class="badge">${source}</span></div><div class="card-body"><div class="card-title">${title}</div><div class="meta">👤 ${channel}${video.published?`<br>📅 ${formatDate(video.published)}`:""}</div><div class="card-buttons">${buttons}</div><div class="quick-progress" id="prog_${cardId}"><div id="text_${cardId}">तैयारी...</div><div class="bar"><div class="fill" id="fill_${cardId}"></div></div></div></div></article>`;
 }
 
-/* ========== QUICK 10/30 SEC CLIP ========== */
+/* ========== QUICK 10/30 SEC MP4 ========== */
 async function quickClip(videoUrl,seconds,cardId){
     if(state.quickProcessing){showToast("एक clip बन रही है, प्रतीक्षा करें");return;}
     state.quickProcessing=true;
@@ -480,7 +490,43 @@ async function quickClip(videoUrl,seconds,cardId){
     }catch(err){
         console.error(err);
         fill.style.width="100%";text.textContent="❌ Error — Advanced Cutter try करें";
-        alert("Quick clip error: "+err.message+"\n\n1) Vercel पर deploy करके try करें\n2) 'Advanced Cutter में लें' use करें");
+        alert("Quick clip error: "+err.message+"\n\n'Advanced Cutter में लें' use करें");
+    }finally{
+        state.quickProcessing=false;
+        setTimeout(()=>{prog.classList.remove("show");fill.style.width="0%";},3500);
+    }
+}
+
+/* ========== QUICK 5 SEC GIF ========== */
+async function quickGif(videoUrl,cardId){
+    if(state.quickProcessing){showToast("एक clip बन रही है, प्रतीक्षा करें");return;}
+    state.quickProcessing=true;
+    const prog=document.getElementById("prog_"+cardId),text=document.getElementById("text_"+cardId),fill=document.getElementById("fill_"+cardId);
+    prog.classList.add("show");fill.style.width="5%";
+    text.textContent="📥 GIF के लिए video download...";
+    try{
+        const blob=await fetchVideoBlob(videoUrl);
+        fill.style.width="30%";text.textContent="🎞️ FFmpeg engine लोड...";
+        await loadFFmpeg();
+        const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
+        const inN="gin_"+Date.now()+".mp4",outN="gout_"+Date.now()+".gif";
+        fill.style.width="50%";text.textContent="🎨 5 sec की चलती GIF बनाई जा रही है...";
+        await ffmpeg.writeFile(inN,await fetchFile(blob));
+        await ffmpeg.exec(["-ss","0","-i",inN,"-t","5","-vf","fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse","-f","gif",outN]);
+        fill.style.width="90%";text.textContent="💾 GIF तैयार...";
+        const data=await ffmpeg.readFile(outN);
+        const outBlob=new Blob([data.buffer],{type:"image/gif"});
+        try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
+        fill.style.width="100%";text.textContent="✅ GIF download हो रही है!";
+        const url=URL.createObjectURL(outBlob);
+        const a=document.createElement("a");a.href=url;a.download="news_clip_5sec.gif";
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),5000);
+        showToast("✅ 5 सेकंड की GIF download हो गई");
+    }catch(err){
+        console.error(err);
+        fill.style.width="100%";text.textContent="❌ GIF error — ⚡10 sec MP4 try करें";
+        alert("GIF error: "+err.message+"\n\n⚡10 sec MP4 clip try करें।");
     }finally{
         state.quickProcessing=false;
         setTimeout(()=>{prog.classList.remove("show");fill.style.width="0%";},3500);
@@ -519,7 +565,7 @@ async function copyURL(url){
         showToast("✅ URL copy हो गया");
     }catch(e){prompt("URL copy करें:",url);}
 }
-function showYouTubeInfo(){alert("YouTube video को directly download करना allowed नहीं है।\n\n✅ '📚 Authorized 10/30s Clip खोजें' दबाएँ — app Commons/Archive से उसी topic की real authorized video लाकर 10/30 sec clip download करा देगा।");}
+function showYouTubeInfo(){alert("YouTube video को directly rip करना illegal है — यह site वह सुविधा नहीं देती।\n\n✅ '📚 Authorized 10/30s Clip खोजें' दबाएँ — app Commons/Archive से उसी topic की real authorized video लाकर MP4/GIF download करा देगा।");}
 
 /* ========== CUTTER ========== */
 document.getElementById("videoFile").addEventListener("change",e=>{const f=e.target.files[0];if(f)loadLocalVideo(f);});
@@ -583,6 +629,8 @@ async function createClip(){
         alert("Clip नहीं बन सकी। छोटी video से test करें।");
     }
 }
+
+/* ========== FFMPEG (worker.js same-origin fix) ========== */
 async function loadFFmpeg(){
     if(state.ffmpegLoaded&&state.ffmpeg)return;
     if(!window.NewsClipFFmpeg)throw new Error("FFmpeg library load नहीं हुई");
@@ -622,7 +670,6 @@ function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\
 document.getElementById("headline").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();searchAll();}});
 document.getElementById("settingsModal").addEventListener("click",e=>{if(e.target.id==="settingsModal")closeSettings();});
 
-/* ========== NETWORK SELF-TEST ========== */
 window.addEventListener("load",async ()=>{
     try{
         await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&meta=siteinfo");
