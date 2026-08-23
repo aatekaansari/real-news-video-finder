@@ -35,14 +35,14 @@ textarea{min-height:70px;resize:vertical}
 .chip.active{background:#fff1f2;color:#be123c;border-color:#fb7185}
 .keywords{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .keyword{background:#eef2ff;color:#3730a3;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:800}
-.notice{margin-top:11px;background:#ecfdf3;border:1px solid #bbf7d0;color:#14532d;border-radius:11px;padding:10px;font-size:10px;line-height:1.65}
+.notice{margin-top:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:11px;padding:10px;font-size:10px;line-height:1.65}
 .status{margin:14px 2px 9px;color:var(--muted);font-size:12px;font-weight:800}
 .loader{display:none;text-align:center;padding:30px}
 .spinner{width:37px;height:37px;border:4px solid #e5e7eb;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:auto auto 10px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .results{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .img-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
-.photo{position:relative;aspect-ratio:4/3;background:#0f172a;overflow:hidden}
+.photo{position:relative;aspect-ratio:16/9;background:#0f172a;overflow:hidden}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
 .badge{position:absolute;top:8px;left:8px;background:#111827;color:#fff;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:900;z-index:2}
 .gifbadge{position:absolute;top:8px;right:8px;background:#e11d48;color:#fff;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:900}
@@ -51,8 +51,7 @@ textarea{min-height:70px;resize:vertical}
 .card-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .card-buttons a,.card-buttons button{text-align:center;padding:10px 5px;font-size:10px;border-radius:9px}
 .dl-photo{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;grid-column:1/-1}
-.dl-gif{background:#ffe4e6;color:#be123c;border-color:#fda4af;grid-column:1/-1}
-.make-gif{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
+.make-gif{background:#ffe4e6;color:#be123c;border-color:#fda4af}
 .src-btn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
 .span2{grid-column:1/-1}
 .card-progress{margin-top:6px;font-size:10px;color:var(--muted);text-align:center;display:none}
@@ -78,8 +77,8 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <header>
 <div class="header-inner">
     <div class="brand">
-        <div class="logo">️</div>
-        <div><h1>Real News Image & GIF Finder</h1><small>Headline → Real Photo/GIF → Download</small></div>
+        <div class="logo">🖼️</div>
+        <div><h1>Real News Image & GIF Finder</h1><small>Headline → Bing/Google Images → 16:9 HD/FHD/4K + GIF</small></div>
     </div>
     <button class="settings-button" onclick="openSettings()">⚙️</button>
 </div>
@@ -88,43 +87,54 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <main class="container">
 
 <section class="hero">
-    <h2>📰 Headline डालें, Real News Photo/GIF Download करें</h2>
-    <p>Wikimedia Commons + Internet Archive से <b>real politicians/news की authorized photos</b> (बिना key)। हर photo से एक tap में <b>animated GIF</b> बनती है — WhatsApp Status/पोस्ट के लिए। Giphy key डालें तो animated GIFs सीधे मिलेंगी।</p>
+    <h2>📰 Headline डालें → सभी Real Images पाएँ → 16:9 में Download करें</h2>
+    <p>Bing + Google Serp worker से <b>हर topic की images</b> मिलती हैं। Quality dropdown: <b>1280×720 (HD) / 1920×1080 (FHD) / 3840×2160 (4K)</b> — सब 16:9। हर image से animated GIF भी बनती है।</p>
 </section>
 
 <section class="search-card">
     <label>📰 News Headline</label>
     <textarea id="headline" placeholder="उदाहरण: नरेंद्र मोदी चुनावी सभा"></textarea>
     <div class="row">
-        <div><label>🕒 Sort</label><select id="sortOrder"><option value="desc">Latest पहले (नई)</option><option value="asc">Oldest पहले (पुरानी)</option></select></div>
-        <div><label>🔢 कितनी results</label><select id="limitSel"><option value="15">15</option><option value="25">25</option><option value="40">40</option></select></div>
+        <div><label>🖥️ Download Quality (16:9)</label>
+            <select id="qualitySel">
+                <option value="720">1280 × 720 — HD</option>
+                <option value="1080" selected>1920 × 1080 — Full HD</option>
+                <option value="2160">3840 × 2160 — 4K</option>
+            </select>
+        </div>
+        <div><label>🔢 Results</label>
+            <select id="limitSel"><option value="18">18</option><option value="30">30</option><option value="45">45</option></select>
+        </div>
     </div>
     <label style="margin-top:12px">🔎 Search Keywords</label>
     <input id="keywords" placeholder="Narendra Modi election rally">
     <div class="keywords" id="keywordList"></div>
     <div class="chips">
-        <div class="chip active" data-source="commons" onclick="toggleSource(this)">🌐 Wikimedia Commons (Free)</div>
-        <div class="chip active" data-source="archive" onclick="toggleSource(this)">📚 Internet Archive (Free)</div>
-        <div class="chip active" data-source="giphy" onclick="toggleSource(this)">🎞️ Giphy GIFs (key optional)</div>
+        <div class="chip active" data-source="bing" onclick="toggleSource(this)">🅱️ Bing Images (सभी)</div>
+        <div class="chip active" data-source="google" onclick="toggleSource(this)">🔎 Google Serp Worker</div>
+        <div class="chip active" data-source="giphy" onclick="toggleSource(this)">🎞️ Giphy GIFs</div>
+        <div class="chip" data-source="commons" onclick="toggleSource(this)">🌐 Wikimedia (CC)</div>
     </div>
     <button class="search-button" onclick="searchAll()">🔍 IMAGE / GIF SEARCH</button>
-    <div class="notice">✅ कोई video/MP4 नहीं — सिर्फ photos और GIF। हर photo पर "🎞️ GIF बनाएं" से 2 सेकंड की animated GIF बनती है। ⚖️ Images का उपयोग news reporting / fair dealing (Copyright Act धारा 52) या free-license के तहत करें।</div>
+    <div class="notice">️ Bing/Google की images copyrighted हो सकती हैं — केवल news reporting / fair dealing (Copyright Act धारा 52) के तहत उपयोग करें। Wikimedia (CC) source भी उपलब्ध है। Downloads आपकी अपनी site के proxy से होती हैं — कोई CORS error नहीं।</div>
 </section>
 
-<div class="status" id="status">Headline डालकर Search दबाएँ — कोई API key ज़रूरी नहीं।</div>
-<div class="loader" id="loader"><div class="spinner"></div><b>Real images/GIF खोजी जा रही हैं...</b></div>
+<div class="status" id="status">Headline डालकर Search दबाएँ।</div>
+<div class="loader" id="loader"><div class="spinner"></div><b>Images खोजी जा रही हैं...</b></div>
 <section class="results" id="results"><div class="empty"><div class="empty-icon">🖼️</div><b>अभी कोई result नहीं</b><p style="margin-top:7px">उदाहरण: <b>नरेंद्र मोदी</b></p></div></section>
 
-<footer>Real News Image & GIF Finder — Photos: Wikimedia Commons (CC) + Internet Archive। GIFs: Giphy।<br>सभी results original sources से linked हैं।</footer>
+<footer>Real News Image & GIF Finder — 16:9 HD / Full HD / 4K downloads + animated GIF</footer>
 </main>
 
 <div class="modal" id="settingsModal">
     <div class="modal-box">
-        <div class="modal-head"><h3>⚙️ Settings (Optional)</h3><button class="close" onclick="closeSettings()">✕</button></div>
-        <label>Giphy API Key (animated GIFs के लिए)</label>
+        <div class="modal-head"><h3>⚙️ Settings</h3><button class="close" onclick="closeSettings()">✕</button></div>
+        <label>Google Serp Worker URL</label>
+        <input id="serpUrl" type="url" placeholder="https://...workers.dev/">
+        <label style="margin-top:12px">Giphy API Key (optional)</label>
         <input id="giphyKey" type="password" placeholder="Giphy API Key">
         <button class="save-button" onclick="saveKeys()">💾 Save करें</button>
-        <div class="help"><b>Giphy key:</b> https://developers.giphy.com → Create App → Free key।<br>बिना key के भी Wikimedia + Archive से real photos मिलती हैं और उनसे GIF बनती है।</div>
+        <div class="help"><b>Giphy key:</b> developers.giphy.com → Create App → Free key।<br><b>Serp worker</b> default में आपके वाला URL है; अगर वह JSON न दे तो app खुद Bing पर fallback कर जाता है।</div>
     </div>
 </div>
 
@@ -132,13 +142,33 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 
 <script>
 "use strict";
-const state={commons:true,archive:true,giphy:true,results:[],busy:false};
+const DEFAULT_SERP="https://google-serp-api.babu902654.workers.dev/";
+const state={bing:true,google:true,giphy:true,commons:false,results:[],busy:false};
 
-function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
-function openSettings(){document.getElementById("settingsModal").classList.add("show");document.getElementById("giphyKey").value=localStorage.getItem("giphy_key")||"";}
+function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
+function openSettings(){document.getElementById("settingsModal").classList.add("show");document.getElementById("serpUrl").value=localStorage.getItem("serp_url")||DEFAULT_SERP;document.getElementById("giphyKey").value=localStorage.getItem("giphy_key")||"";}
 function closeSettings(){document.getElementById("settingsModal").classList.remove("show");}
-function saveKeys(){const g=document.getElementById("giphyKey").value.trim();if(g)localStorage.setItem("giphy_key",g);else localStorage.removeItem("giphy_key");closeSettings();showToast("Key save हो गई");}
+function saveKeys(){
+    const s=document.getElementById("serpUrl").value.trim(),g=document.getElementById("giphyKey").value.trim();
+    if(s)localStorage.setItem("serp_url",s);else localStorage.removeItem("serp_url");
+    if(g)localStorage.setItem("giphy_key",g);else localStorage.removeItem("giphy_key");
+    closeSettings();showToast("Settings save हो गईं");
+}
 function toggleSource(el){const s=el.dataset.source;state[s]=!state[s];el.classList.toggle("active",state[s]);}
+function getQuality(){const v=document.getElementById("qualitySel").value;return v==="720"?[1280,720]:v==="1080"?[1920,1080]:[3840,2160];}
+function ownProxy(u){return (location.protocol==="http:"||location.protocol==="https:")?"/api/proxy?url="+encodeURIComponent(u):null;}
+
+/* ========== FETCH VIA PROXY ========== */
+async function fetchViaProxy(url){
+    const p=ownProxy(url);
+    if(p){
+        const r=await fetch(p);
+        if(r.ok)return await r.blob();
+    }
+    const r2=await fetch(url);
+    if(!r2.ok)throw new Error("HTTP "+r2.status);
+    return await r2.blob();
+}
 
 /* ========== KEYWORDS ========== */
 const dictionary={"नरेंद्र मोदी":"Narendra Modi","मोदी":"Narendra Modi","योगी आदित्यनाथ":"Yogi Adityanath","योगी":"Yogi Adityanath","अखिलेश यादव":"Akhilesh Yadav","राहुल गांधी":"Rahul Gandhi","प्रियंका गांधी":"Priyanka Gandhi","ममता बनर्जी":"Mamata Banerjee","अरविंद केजरीवाल":"Arvind Kejriwal","चुनावी सभा":"election rally","चुनाव":"election","जनसभा":"public rally","रैली":"rally","भाषण":"speech","संबोधन":"address","प्रेस कॉन्फ्रेंस":"press conference","संसद":"Indian Parliament","उत्तर प्रदेश":"Uttar Pradesh India","यूपी":"Uttar Pradesh India","बिहार":"Bihar India","दिल्ली":"Delhi India","महाराष्ट्र":"Maharashtra India","भारत":"India","सरकार":"Indian government","मंत्री":"Indian minister","किसान":"Indian farmers","प्रदर्शन":"India protest","धरना":"India protest"};
@@ -163,25 +193,82 @@ async function searchAll(){
     showKeywords();
     document.getElementById("loader").style.display="block";
     document.getElementById("results").innerHTML="";
-    document.getElementById("status").textContent=`"${query}" की images/GIF खोजी जा रही हैं...`;
+    document.getElementById("status").textContent=`"${query}" की images खोजी जा रही हैं...`;
     state.results=[];
     const tasks=[];
+    if(state.bing)tasks.push(searchBing(query));
+    if(state.google)tasks.push(searchSerpWorker(query));
     if(state.commons)tasks.push(searchCommons(query));
-    if(state.archive)tasks.push(searchArchive(query));
     const gk=localStorage.getItem("giphy_key");
     if(state.giphy&&gk)tasks.push(searchGiphy(query,gk));
     const res=await Promise.allSettled(tasks);
     res.forEach(r=>{if(r.status==="fulfilled")state.results.push(...r.value);});
     renderResults();
     document.getElementById("loader").style.display="none";
-    if(!gk&&state.giphy)showToast("Tip: Giphy key डालें तो animated GIFs भी मिलेंगी (⚙️)");
 }
 
-/* ========== WIKIMEDIA COMMONS (photos + gifs) ========== */
+/* ========== BING IMAGES (proxy scrape) ========== */
+async function searchBing(query){
+    try{
+        const target="https://www.bing.com/images/search?q="+encodeURIComponent(query)+"&count="+document.getElementById("limitSel").value+"&form=HDRSC2";
+        const p=ownProxy(target);
+        let txt=null;
+        if(p){const r=await fetch(p);if(r.ok)txt=await r.text();}
+        if(!txt){const r=await fetch(target);if(r.ok)txt=await r.text();}
+        if(!txt)return [];
+        txt=txt.replace(/&quot;/g,'"').replace(/&amp;/g,"&").replace(/&#47;/g,"/");
+        const murls=[...txt.matchAll(/"murl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
+        const turls=[...txt.matchAll(/"turl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
+        const titles=[...txt.matchAll(/"t"\s*:\s*"([^"]*)"/g)].map(m=>m[1]);
+        const out=[];
+        const seen=new Set();
+        murls.forEach((mu,i)=>{
+            if(seen.has(mu))return;seen.add(mu);
+            out.push({source:"Bing",title:titles[i]||query,mime:"image/jpeg",preview:turls[i]||mu,downloadUrl:mu,pageUrl:"https://www.bing.com/images/search?q="+encodeURIComponent(query),ext:"jpg"});
+        });
+        return out.slice(0,Number(document.getElementById("limitSel").value));
+    }catch(e){console.error(e);return [];}
+}
+
+/* ========== GOOGLE SERP WORKER (smart fallback) ========== */
+function extractSerpImages(data){
+    const arr=data.images||data.image_results||data.results||data.items||(data.data&&data.data.images)||[];
+    if(!Array.isArray(arr))return [];
+    return arr.map(o=>{
+        const url=o.image||o.original||o.url||o.src||o.link;
+        if(!url||!/^https?:/.test(url))return null;
+        return {source:"Google",title:o.title||o.t||"Google Image",mime:"image/jpeg",preview:o.thumbnail||o.thumb||url,downloadUrl:url,pageUrl:o.page||o.source||url,ext:"jpg"};
+    }).filter(Boolean);
+}
+async function searchSerpWorker(query){
+    const base=(localStorage.getItem("serp_url")||DEFAULT_SERP).replace(/\/+$/,"/");
+    const eps=[base+"?q=",base+"search?q=",base+"api?q="];
+    for(const ep of eps){
+        try{
+            const r=await fetch(ep+encodeURIComponent(query),{headers:{Accept:"application/json"}});
+            if(!r.ok)continue;
+            const txt=await r.text();
+            const t=txt.trim();
+            if(t.startsWith("{")||t.startsWith("[")){
+                try{
+                    const imgs=extractSerpImages(JSON.parse(t));
+                    if(imgs.length)return imgs;
+                }catch(e){}
+            }
+            const un=t.replace(/&quot;/g,'"');
+            const murls=[...un.matchAll(/"murl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
+            if(murls.length)return murls.map(mu=>({source:"Google",title:query,mime:"image/jpeg",preview:mu,downloadUrl:mu,pageUrl:base,ext:"jpg"}));
+            const srcs=[...un.matchAll(/<img[^>]+src="(https?:\/\/[^"]+)"/g)].map(m=>m[1]).filter(u=>/gstatic|googleusercontent|tbn/.test(u));
+            if(srcs.length)return srcs.map(mu=>({source:"Google",title:query,mime:"image/jpeg",preview:mu,downloadUrl:mu,pageUrl:base,ext:"jpg"}));
+        }catch(e){}
+    }
+    return [];
+}
+
+/* ========== WIKIMEDIA (CC, optional) ========== */
 async function searchCommons(query){
     try{
-        const limit=document.getElementById("limitSel").value;
-        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:bitmap")+"&gsrsort=create_timestamp_"+document.getElementById("sortOrder").value+"&gsrnamespace=6&gsrlimit="+limit+"&prop=imageinfo&iiprop=url|mime|size&iiurlwidth=420";
+        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:bitmap")+"&gsrsort=create_timestamp_desc&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=420";
         const r=await fetch(url);
         if(!r.ok)return [];
         const data=await r.json();
@@ -193,32 +280,10 @@ async function searchCommons(query){
     }catch(e){console.error(e);return [];}
 }
 
-/* ========== INTERNET ARCHIVE (photos/posters) ========== */
-async function searchArchive(query){
-    try{
-        const url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(image)")+"&fl[]=identifier&fl[]=title&rows=12&page=1&output=json&sort[]=publicdate+"+document.getElementById("sortOrder").value;
-        const r=await fetch(url);
-        if(!r.ok)return [];
-        const data=await r.json();
-        const docs=(data.response&&data.response.docs)||[];
-        const metas=await Promise.allSettled(docs.slice(0,8).map(d=>fetch("https://cors.archive.org/cors/metadata/"+d.identifier).then(x=>x.json())));
-        const out=[];
-        metas.forEach((m,i)=>{
-            if(m.status!=="fulfilled")return;
-            const files=m.value.files||[],id=docs[i].identifier;
-            const f=files.find(x=>/\.(jpe?g|png|gif)$/i.test(x.name)&&x.format!=="Thumbnail")||files.find(x=>/\.(jpe?g|png|gif)$/i.test(x.name));
-            if(!f)return;
-            const ext=(f.name.split(".").pop()||"jpg").toLowerCase();
-            out.push({source:"Archive",title:docs[i].title||id,mime:"image/"+(ext==="jpg"?"jpeg":ext),preview:"https://archive.org/services/img/"+id,downloadUrl:"https://cors.archive.org/cors/download/"+id+"/"+encodeURIComponent(f.name),pageUrl:"https://archive.org/details/"+id,ext:ext});
-        });
-        return out;
-    }catch(e){console.error(e);return [];}
-}
-
-/* ========== GIPHY (animated GIFs, optional key) ========== */
+/* ========== GIPHY ========== */
 async function searchGiphy(query,key){
     try{
-        const r=await fetch("https://api.giphy.com/v1/gifs/search?api_key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&limit=15&rating=pg-13");
+        const r=await fetch("https://api.giphy.com/v1/gifs/search?api_key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&limit=12&rating=pg-13");
         if(!r.ok)return [];
         const d=await r.json();
         return (d.data||[]).map(g=>({source:"Giphy",title:g.title||"GIF",mime:"image/gif",preview:g.images.fixed_width.url,downloadUrl:g.images.original.url,pageUrl:g.url,ext:"gif"}));
@@ -233,62 +298,72 @@ function renderResults(){
         document.getElementById("status").textContent="कोई image नहीं मिली।";
         return;
     }
-    document.getElementById("status").textContent=`${state.results.length} images/GIF मिलीं — Download buttons दबाएँ।`;
+    document.getElementById("status").textContent=`${state.results.length} images मिलीं — 16:9 quality चुनकर download करें।`;
     c.innerHTML=state.results.map((item,i)=>createCard(item,i)).join("");
 }
 function createCard(item,i){
     const isGif=item.mime==="image/gif";
-    const fname=slug(item.title)+"."+item.ext;
-    let buttons;
-    if(isGif){
-        buttons=`
-        <button class="dl-gif" onclick="downloadBlob('${escapeJS(item.downloadUrl)}','${escapeJS(fname)}')">🎞️ GIF Download करें</button>
-        <button class="make-gif" onclick="makeGif('${escapeJS(item.preview)}','p_${i}','${escapeJS(item.title)}')"> नई GIF बनाएं</button>
-        <a class="src-btn" href="${escapeAttr(item.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>`;
-    }else{
-        buttons=`
-        <button class="dl-photo" onclick="downloadBlob('${escapeJS(item.downloadUrl)}','${escapeJS(fname)}')">⬇️ Photo Download (${escapeHTML(item.ext.toUpperCase())})</button>
-        <button class="make-gif" onclick="makeGif('${escapeJS(item.preview)}','p_${i}','${escapeJS(item.title)}')">🎞️ GIF बनाएं</button>
-        <a class="src-btn" href="${escapeAttr(item.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>`;
-    }
     return `<article class="img-card">
         <div class="photo"><img src="${escapeAttr(item.preview)}" alt="" loading="lazy"><span class="badge">${escapeHTML(item.source)}</span>${isGif?'<span class="gifbadge">GIF</span>':""}</div>
         <div class="card-body">
             <div class="card-title">${escapeHTML(item.title)}</div>
-            <div class="card-buttons">${buttons}</div>
+            <div class="card-buttons">
+                <button class="dl-photo" onclick="export169(${i})">${isGif?"⬇️ GIF Download करें":"⬇️ 16:9 Download (HD/FHD/4K)"}</button>
+                <button class="make-gif" onclick="makeGif(${i})">🎞️ GIF बनाएं</button>
+                <a class="src-btn" href="${escapeAttr(item.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
+            </div>
             <div class="card-progress" id="p_${i}"></div>
         </div></article>`;
 }
 
-/* ========== PHOTO DOWNLOAD ========== */
-async function downloadBlob(url,filename){
-    showToast("⬇️ Download हो रही है...");
+/* ========== 16:9 HD/FHD/4K DOWNLOAD ========== */
+async function export169(i){
+    const item=state.results[i];
+    const p=document.getElementById("p_"+i);
+    p.classList.add("show");p.textContent="📥 Image download हो रही है...";
     try{
-        const r=await fetch(url);
-        if(!r.ok)throw new Error("HTTP "+r.status);
-        const b=await r.blob();
-        const u=URL.createObjectURL(b);
-        const a=document.createElement("a");a.href=u;a.download=filename;
-        document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(u),4000);
-        showToast("✅ "+filename+" download हो गई");
+        if(item.mime==="image/gif"){
+            const b=await fetchViaProxy(item.downloadUrl);
+            saveBlob(b,slug(item.title)+".gif","image/gif");
+            p.textContent="✅ GIF download हो गई";
+            setTimeout(()=>p.classList.remove("show"),2500);
+            return;
+        }
+        const [W,H]=getQuality();
+        const blob=await fetchViaProxy(item.downloadUrl);
+        const img=await blobToImage(blob);
+        p.textContent=`🖼️ ${W}×${H} में convert हो रहा है...`;
+        const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
+        const ctx=canvas.getContext("2d");
+        const base=Math.max(W/img.naturalWidth,H/img.naturalHeight);
+        const sw=W/base,sh=H/base;
+        const sx=(img.naturalWidth-sw)/2,sy=(img.naturalHeight-sh)/2;
+        ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
+        const out=await new Promise(res=>canvas.toBlob(res,"image/jpeg",0.92));
+        saveBlob(out,slug(item.title)+"_"+W+"x"+H+".jpg","image/jpeg");
+        p.textContent=`✅ ${W}×${H} (16:9) download हो गई`;
+        showToast(`✅ ${W}×${H} image download हो गई`);
+        setTimeout(()=>p.classList.remove("show"),2500);
     }catch(e){
-        window.open(url,"_blank");
-        showToast("Browser में खुली — long-press करके save करें");
+        console.error(e);
+        p.textContent="❌ Error — Source link से manually save करें";
+        window.open(item.downloadUrl,"_blank");
+        setTimeout(()=>p.classList.remove("show"),3000);
     }
 }
 
-/* ========== PHOTO → ANIMATED GIF (zoom effect) ========== */
-async function makeGif(url,progId,title){
-    const p=document.getElementById(progId);
-    p.classList.add("show");p.textContent="🖼️ Image load हो रही है...";
+/* ========== ANIMATED GIF (quality-aware, max FHD) ========== */
+async function makeGif(i){
+    const item=state.results[i];
+    const p=document.getElementById("p_"+i);
+    p.classList.add("show");p.textContent="📥 Image load हो रही है...";
     try{
-        const img=await new Promise((res,rej)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>res(i);i.onerror=()=>rej(new Error("image load failed"));i.src=url;});
+        let [W,H]=getQuality();
+        if(W>1920){W=1920;H=1080;showToast("GIF के लिए Full HD use किया (4K GIF बहुत भारी होती है)");}
+        const blob=await fetchViaProxy(item.downloadUrl);
+        const img=await blobToImage(blob);
         p.textContent="🎞️ GIF frames बन रहे हैं...";
         const {GIFEncoder,quantize,applyPalette}=await import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js");
-        const W=320;
-        let H=Math.round(W*img.naturalHeight/img.naturalWidth);
-        H=Math.max(180,Math.min(420,H));
         const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
         const ctx=canvas.getContext("2d",{willReadFrequently:true});
         const gif=GIFEncoder();
@@ -305,26 +380,36 @@ async function makeGif(url,progId,title){
             gif.writeFrame(idx,W,H,{palette,delay:100});
         }
         gif.finish();
-        const blob=new Blob([gif.bytes()],{type:"image/gif"});
-        const u=URL.createObjectURL(blob);
-        const a=document.createElement("a");a.href=u;a.download=slug(title)+".gif";
-        document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(u),4000);
-        p.textContent="✅ GIF download हो गई!";
-        showToast("✅ 2 sec animated GIF download हो गई");
-        setTimeout(()=>{p.classList.remove("show");},2500);
+        saveBlob(new Blob([gif.bytes()],{type:"image/gif"}),slug(item.title)+"_"+W+"x"+H+".gif","image/gif");
+        p.textContent=`✅ GIF (${W}×${H}) download हो गई`;
+        showToast("✅ Animated GIF download हो गई");
+        setTimeout(()=>p.classList.remove("show"),2500);
     }catch(e){
         console.error(e);
-        p.textContent="❌ GIF नहीं बनी — दूसरी photo try करें";
-        setTimeout(()=>{p.classList.remove("show");},3000);
+        p.textContent="❌ GIF नहीं बनी — दूसरी image try करें";
+        setTimeout(()=>p.classList.remove("show"),3000);
     }
 }
 
 /* ========== HELPERS ========== */
-function slug(s){return String(s||"clip").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"clip";}
+function saveBlob(blob,name,type){
+    const u=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=u;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);
+}
+function blobToImage(blob){
+    return new Promise((res,rej)=>{
+        const u=URL.createObjectURL(blob);
+        const img=new Image();
+        img.onload=()=>{URL.revokeObjectURL(u);res(img);};
+        img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image decode failed"));};
+        img.src=u;
+    });
+}
+function slug(s){return String(s||"image").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"image";}
 function escapeHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
 function escapeAttr(v){return escapeHTML(v);}
-function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g,"\\n").replace(/\r/g,"\\r");}
 
 document.getElementById("headline").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();searchAll();}});
 document.getElementById("settingsModal").addEventListener("click",e=>{if(e.target.id==="settingsModal")closeSettings();});
