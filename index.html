@@ -58,7 +58,7 @@ textarea{min-height:78px;resize:vertical}
 .direct-download{background:#ecfdf3;color:#15803d;border-color:#bbf7d0;grid-column:1/-1}
 .quick-clip-10{background:#fef3c7;color:#b45309;border-color:#fcd34d}
 .quick-clip-30{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
-.quick-gif{background:#fdf2f8;color:#be185d;border-color:#fbcfe8;grid-column:1/-1}
+.gif-button{background:#ffe4e6;color:#be123c;border-color:#fda4af;grid-column:1/-1}
 .find-auth{background:#fef3c7;color:#92400e;border-color:#fcd34d;grid-column:1/-1}
 .quick-progress{grid-column:1/-1;margin-top:6px;padding:8px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;font-size:10px;text-align:center;color:var(--muted);display:none}
 .quick-progress.show{display:block}
@@ -119,7 +119,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <div class="header-inner">
     <div class="brand">
         <div class="logo">▶</div>
-        <div><h1>Real News Video Finder</h1><small>Search → Video → MP4 Clip / GIF</small></div>
+        <div><h1>Real News Video Finder</h1><small>Search → Authorized Video → MP4/GIF Clip</small></div>
     </div>
     <button class="settings-button" onclick="openSettings()">⚙️</button>
 </div>
@@ -128,8 +128,8 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 <main class="container">
 
 <section class="hero">
-    <h2>📰 Headline डालें, Real Video पाएँ</h2>
-    <p>हर direct video से download करें: ⚡ <b>10 sec MP4</b> • ⚡ <b>30 sec MP4</b> • 🎞️ <b>5 sec GIF</b> (चलती हुई image वाली file)। 🕰️ Latest/Oldest क्रम भी चुन सकते हैं। Sources: 📺 TV News Archive + 🌐 Wikimedia Commons (authorized, बिना API key)।</p>
+    <h2>📰 Headline डालें, Real Video पाएँ, MP4 या GIF Download करें</h2>
+    <p>📺 TV News Archive + Wikimedia Commons से <b>authorized real news videos</b> (बिना API key)। हर direct video पर ⚡10/30 sec MP4 और 🎞️ GIF clip download। Sort: Latest ↔ Oldest।</p>
 </section>
 
 <section class="search-card">
@@ -137,7 +137,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
     <textarea id="headline" placeholder="उदाहरण: नरेंद्र मोदी की चुनावी सभा में बड़ा ऐलान"></textarea>
     <div class="grid">
         <div><label>📅 समय</label><select id="dateFilter"><option value="any">किसी भी तारीख</option><option value="day">पिछले 24 घंटे</option><option value="week">पिछला सप्ताह</option><option value="month">पिछला महीना</option></select></div>
-        <div><label>🕰️ क्रम (Sort)</label><select id="sortOrder"><option value="latest">Latest पहले</option><option value="oldest">Oldest पहले</option></select></div>
+        <div><label>🕒 Sort</label><select id="sortOrder"><option value="desc">Latest पहले (नई)</option><option value="asc">Oldest पहले (पुरानी)</option></select></div>
         <div><label>⏱️ Duration</label><select id="durationFilter"><option value="any">कोई भी</option><option value="short">1 मिनट तक</option><option value="medium">1–4 मिनट</option><option value="long">4+ मिनट</option></select></div>
         <div><label>📺 Format</label><select id="orientation"><option value="any">कोई भी</option><option value="landscape">16:9</option><option value="portrait">9:16</option></select></div>
         <div><label>🔐 License</label><select id="licenseFilter"><option value="any">सभी YouTube videos</option><option value="creativeCommon">Creative Commons</option></select></div>
@@ -154,7 +154,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
         <div class="chip active" data-source="pixabay" onclick="toggleSource(this)">🎞️ Pixabay</div>
     </div>
     <button class="search-button" onclick="searchAll()">🔍 REAL VIDEO SEARCH</button>
-    <div class="notice">✅ Vercel proxy की वजह से कोई CORS error नहीं। हर direct video पर ⚡10s / ⚡30s MP4 और 🎞️ 5s GIF download। 🕰️ Latest/Oldest क्रम चुनें। ⚖️ Clips/GIF का उपयोग केवल news reporting / fair dealing (Copyright Act धारा 52) या free-license के तहत करें। YouTube rip करना illegal है — यह site उसे support नहीं करती।</div>
+    <div class="notice">✅ Vercel proxy की वजह से कोई CORS error नहीं। 🎞️ GIF button से 10 sec की GIF बनती है (WhatsApp/Status के लिए perfect)। ⚖️ Clips का उपयोग केवल news reporting / fair dealing (Copyright Act धारा 52) या free-license के तहत करें।</div>
 </section>
 
 <div class="status" id="status">Headline डालकर Search दबाएँ — API key की ज़रूरत नहीं।</div>
@@ -171,7 +171,7 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
 </section>
 
 <section class="cutter-section">
-    <div class="section-title"><div><h3>✂️ 10/30 सेकंड Clip Cutter</h3><small>Processing आपके browser में होती है</small></div></div>
+    <div class="section-title"><div><h3>✂️ 10/30 सेकंड Clip Cutter (MP4 + GIF)</h3><small>Processing आपके browser में होती है</small></div></div>
     <div class="file-area">
         <div class="file-icon">🎞️</div>
         <p>Downloaded / legally usable video file चुनें।</p>
@@ -195,18 +195,20 @@ footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
             <input id="startRange" type="range" min="0" max="0" step="0.1" value="0">
             <div class="range-value"><span>00:00</span><span id="rangeEnd">00:00</span></div>
         </div>
-        <button class="cut-button" onclick="createClip()">✂️ VIDEO CLIP काटें</button>
+        <button class="cut-button" onclick="createClip()">✂️ MP4 CLIP काटें</button>
+        <button class="cut-button" style="background:linear-gradient(135deg,#e11d48,#be123c);border-color:#e11d48" onclick="createClipGif()">🎞️ GIF CLIP बनाएं</button>
         <button class="reset-button" onclick="resetCutter()">🔄 Reset Cutter</button>
         <div class="progress-wrap" id="progressWrap"><div class="progress-bg"><div class="progress-bar" id="progressBar"></div></div><div class="progress-text" id="progressText">Preparing...</div></div>
         <div class="output-box" id="outputBox">
             <h4>✅ आपका Clip तैयार है</h4>
             <video class="output-video" id="outputVideo" controls playsinline></video>
-            <a class="download-output" id="downloadOutput" href="#" download="news_clip.mp4">⬇️ MP4 Clip Download करें</a>
+            <img id="outputGif" style="width:100%;border-radius:11px;display:none" alt="GIF clip">
+            <a class="download-output" id="downloadOutput" href="#" download="news_clip.mp4">⬇️ Clip Download करें</a>
         </div>
     </div>
 </section>
 
-<footer>Real News Video Finder — MP4 Clip + GIF Downloader<br><br>Archive/Commons videos free-license (CC/Public Domain) में होती हैं। उपयोग news reporting/fair dealing के तहत करें।</footer>
+<footer>Real News Video Finder + 10/30 Sec MP4/GIF Clip Cutter<br><br>Archive/Commons videos free-license (CC/Public Domain) में होती हैं। Clips का उपयोग news reporting/fair dealing के तहत करें।</footer>
 </main>
 
 <div class="modal" id="settingsModal">
@@ -237,6 +239,7 @@ function openSettings(){document.getElementById("settingsModal").classList.add("
 function closeSettings(){document.getElementById("settingsModal").classList.remove("show");}
 function saveKeys(){const yt=document.getElementById("youtubeKey").value.trim(),px=document.getElementById("pexelsKey").value.trim(),pb=document.getElementById("pixabayKey").value.trim();if(yt)localStorage.setItem("yt_api_key",yt);else localStorage.removeItem("yt_api_key");if(px)localStorage.setItem("pexels_api_key",px);else localStorage.removeItem("pexels_api_key");if(pb)localStorage.setItem("pixabay_api_key",pb);else localStorage.removeItem("pixabay_api_key");closeSettings();showToast("API Keys save हो गईं");}
 function toggleSource(el){const s=el.dataset.source;state[s]=!state[s];el.classList.toggle("active",state[s]);}
+function getSort(){return document.getElementById("sortOrder").value;}
 
 /* ========== SAME-ORIGIN PROXY ========== */
 function ownProxy(u){
@@ -256,7 +259,6 @@ const BLOB_ENDPOINTS=[
     u=>u.replace("https://archive.org/download/","https://cors.archive.org/cors/download/"),
     u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u)
 ];
-
 async function fetchJSONChain(url){
     let lastErr=null;
     for(const make of JSON_ENDPOINTS){
@@ -303,9 +305,6 @@ function showKeywords(){const q=document.getElementById("keywords").value.trim()
 document.getElementById("headline").addEventListener("input",()=>{const q=makeKeywords();if(q){document.getElementById("keywords").value=q;showKeywords();}});
 document.getElementById("keywords").addEventListener("input",showKeywords);
 
-/* ========== SORT ========== */
-function isLatest(){return document.getElementById("sortOrder").value!=="oldest";}
-
 /* ========== SEARCH ALL ========== */
 async function searchAll(){
     const headline=document.getElementById("headline").value.trim();
@@ -330,11 +329,10 @@ async function searchAll(){
     document.getElementById("loader").style.display="none";
 }
 
-/* ========== WIKIMEDIA COMMONS (latest/oldest sort) ========== */
+/* ========== WIKIMEDIA COMMONS (Latest/Oldest sort) ========== */
 async function searchCommons(query){
     try{
-        let url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:video")+"&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=480";
-        url+="&gsrsort="+(isLatest()?"create_timestamp_desc":"create_timestamp_asc");
+        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:video")+"&gsrsort=create_timestamp_"+getSort()+"&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=480";
         const data=await fetchJSONChain(url);
         const pages=(data.query&&data.query.pages)||{};
         return Object.values(pages).filter(p=>p.imageinfo&&p.imageinfo[0].mime&&p.imageinfo[0].mime.startsWith("video/")).map(p=>{
@@ -344,12 +342,11 @@ async function searchCommons(query){
     }catch(e){console.error(e);return [];}
 }
 
-/* ========== INTERNET ARCHIVE + TV NEWS (latest/oldest sort) ========== */
+/* ========== INTERNET ARCHIVE + TV NEWS (Latest/Oldest sort) ========== */
 async function searchArchive(query){
     try{
         const tv=state.tvnews?" AND collection:(tvnews OR tv OR television OR news)":"";
-        let url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(movies)"+tv)+"&fl[]=identifier&fl[]=title&rows=12&page=1&output=json";
-        url+="&sort%5B%5D="+(isLatest()?"publicdate%20desc":"publicdate%20asc");
+        const url="https://archive.org/advancedsearch.php?q="+encodeURIComponent(query+" AND mediatype:(movies)"+tv)+"&fl[]=identifier&fl[]=title&rows=12&page=1&output=json&sort[]=publicdate+"+getSort();
         const data=await fetchJSONChain(url);
         const docs=(data.response&&data.response.docs)||[];
         const metas=await Promise.allSettled(docs.slice(0,6).map(d=>fetchJSONChain("https://archive.org/metadata/"+d.identifier)));
@@ -369,7 +366,7 @@ async function searchArchive(query){
 /* ========== YOUTUBE / PEXELS / PIXABAY ========== */
 function getPublishedAfter(){const f=document.getElementById("dateFilter").value;if(f==="any")return "";const d=new Date();if(f==="day")d.setDate(d.getDate()-1);if(f==="week")d.setDate(d.getDate()-7);if(f==="month")d.setMonth(d.getMonth()-1);return d.toISOString();}
 async function searchYouTube(query,key){
-    const params=new URLSearchParams({key:key,part:"snippet",q:query,type:"video",maxResults:"15",regionCode:"IN",videoEmbeddable:"true"});
+    const params=new URLSearchParams({key:key,part:"snippet",q:query,type:"video",maxResults:"15",regionCode:"IN",videoEmbeddable:"true",order:"date"});
     const pub=getPublishedAfter();if(pub)params.set("publishedAfter",pub);
     const dur=document.getElementById("durationFilter").value;if(dur!=="any")params.set("videoDuration",dur);
     if(document.getElementById("licenseFilter").value==="creativeCommon")params.set("videoLicense","creativeCommon");
@@ -392,7 +389,7 @@ async function searchPexels(query,key){
 }
 async function searchPixabay(query,key){
     try{
-        const r=await fetch("https://pixabay.com/api/videos/?key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&safesearch=true&per_page=15");
+        const r=await fetch("https://pixabay.com/api/videos/?key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&safesearch=true&per_page=15&order="+(getSort()==="asc"?"popular":"latest"));
         if(!r.ok)return [];
         const d=await r.json();
         return (d.hits||[]).map(v=>{const f=v.videos&&(v.videos.medium||v.videos.small||v.videos.tiny);if(!f)return null;return {type:"direct",source:"Pixabay",id:v.id,title:"Pixabay Video #"+v.id,channel:v.user||"Pixabay",thumbnail:f.thumbnail||"",videoUrl:f.url||"",pageUrl:v.pageURL||""};}).filter(Boolean);
@@ -420,7 +417,7 @@ async function findAuthorizedAlternative(title,replace){
     state.results=replace?found:found.concat(state.results);
     renderResults();
     document.getElementById("results").scrollIntoView({behavior:"smooth"});
-    showToast(`✅ ${found.length} authorized videos — MP4/GIF download करें`);
+    showToast(`✅ ${found.length} authorized videos — MP4/GIF clip download करें`);
 }
 
 /* ========== RENDER ========== */
@@ -431,7 +428,7 @@ function renderResults(){
         document.getElementById("status").textContent="कोई video नहीं मिला।";
         return;
     }
-    document.getElementById("status").textContent=`${state.results.length} videos मिलीं — ⚡10/30s MP4 या 🎞️ GIF download करें।`;
+    document.getElementById("status").textContent=`${state.results.length} videos मिलीं — MP4 / GIF buttons दबाएँ।`;
     c.innerHTML=state.results.map((v,i)=>createCard(v,i)).join("");
 }
 function createCard(video,index){
@@ -449,9 +446,9 @@ function createCard(video,index){
         <button class="find-auth" onclick="findAuthorizedAlternative('${escapeJS(video.title)}',true)">📚 Authorized 10/30s Clip खोजें (Free)</button>`;
     }else{
         buttons=`
-        <button class="quick-clip-10" onclick="quickClip('${escapeJS(video.videoUrl)}',10,'${cardId}')">⚡ 10 sec Clip</button>
-        <button class="quick-clip-30" onclick="quickClip('${escapeJS(video.videoUrl)}',30,'${cardId}')">⚡ 30 sec Clip</button>
-        <button class="quick-gif" onclick="quickGif('${escapeJS(video.videoUrl)}','${cardId}')">🎞️ 5 sec GIF Download</button>
+        <button class="quick-clip-10" onclick="quickClip('${escapeJS(video.videoUrl)}',10,'${cardId}','mp4')">⚡ 10 sec MP4</button>
+        <button class="quick-clip-30" onclick="quickClip('${escapeJS(video.videoUrl)}',30,'${cardId}','mp4')">⚡ 30 sec MP4</button>
+        <button class="gif-button" onclick="quickClip('${escapeJS(video.videoUrl)}',10,'${cardId}','gif')">🎞️ 10 sec GIF Download</button>
         <a class="preview" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">▶️ Preview</a>
         <a class="source" href="${escapeAttr(video.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
         <a class="direct-download" href="${escapeAttr(video.videoUrl)}" target="_blank" rel="noopener">⬇️ Full Download</a>
@@ -460,73 +457,43 @@ function createCard(video,index){
     return `<article class="video-card"><div class="thumbnail">${media}<span class="badge">${source}</span></div><div class="card-body"><div class="card-title">${title}</div><div class="meta">👤 ${channel}${video.published?`<br>📅 ${formatDate(video.published)}`:""}</div><div class="card-buttons">${buttons}</div><div class="quick-progress" id="prog_${cardId}"><div id="text_${cardId}">तैयारी...</div><div class="bar"><div class="fill" id="fill_${cardId}"></div></div></div></div></article>`;
 }
 
-/* ========== QUICK 10/30 SEC MP4 ========== */
-async function quickClip(videoUrl,seconds,cardId){
+/* ========== QUICK CLIP (MP4 + GIF) ========== */
+async function quickClip(videoUrl,seconds,cardId,format){
     if(state.quickProcessing){showToast("एक clip बन रही है, प्रतीक्षा करें");return;}
     state.quickProcessing=true;
+    const isGif=format==="gif";
     const prog=document.getElementById("prog_"+cardId),text=document.getElementById("text_"+cardId),fill=document.getElementById("fill_"+cardId);
     prog.classList.add("show");fill.style.width="5%";
-    text.textContent=`📥 ${seconds} sec clip के लिए video download...`;
+    text.textContent=`📥 ${seconds} sec ${isGif?"GIF":"MP4"} के लिए video download...`;
     try{
         const blob=await fetchVideoBlob(videoUrl);
         fill.style.width="30%";text.textContent="✂️ FFmpeg engine लोड...";
         await loadFFmpeg();
         const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
-        const inN="qin_"+Date.now()+".mp4",outN="qout_"+Date.now()+".mp4";
+        const inN="qin_"+Date.now()+".mp4";
+        const outN="qout_"+Date.now()+(isGif?".gif":".mp4");
         fill.style.width="50%";text.textContent="📤 Processing...";
         await ffmpeg.writeFile(inN,await fetchFile(blob));
-        fill.style.width="60%";text.textContent=`✂️ ${seconds} सेकंड काटे जा रहे हैं...`;
-        await ffmpeg.exec(["-ss","0","-i",inN,"-t",String(seconds),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
-        fill.style.width="90%";text.textContent="💾 MP4 तैयार...";
+        fill.style.width="60%";text.textContent=`✂️ ${seconds} sec ${isGif?"GIF":"MP4"} बन रही है...`;
+        if(isGif){
+            await ffmpeg.exec(["-ss","0","-i",inN,"-t",String(seconds),"-vf","fps=10,scale=320:-2:flags=lanczos,split[v0][v1];[v0]palettegen[p];[v1][p]paletteuse","-loop","0",outN]);
+        }else{
+            await ffmpeg.exec(["-ss","0","-i",inN,"-t",String(seconds),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
+        }
+        fill.style.width="90%";text.textContent="💾 File तैयार...";
         const data=await ffmpeg.readFile(outN);
-        const outBlob=new Blob([data.buffer],{type:"video/mp4"});
+        const outBlob=new Blob([data.buffer],{type:isGif?"image/gif":"video/mp4"});
         try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
-        fill.style.width="100%";text.textContent=`✅ ${seconds} sec clip download हो रही है!`;
+        fill.style.width="100%";text.textContent=`✅ ${isGif?"GIF":"MP4"} download हो रही है!`;
         const url=URL.createObjectURL(outBlob);
-        const a=document.createElement("a");a.href=url;a.download=`news_clip_${seconds}sec.mp4`;
+        const a=document.createElement("a");a.href=url;a.download=isGif?`news_clip_${seconds}sec.gif`:`news_clip_${seconds}sec.mp4`;
         document.body.appendChild(a);a.click();a.remove();
         setTimeout(()=>URL.revokeObjectURL(url),5000);
-        showToast(`✅ ${seconds} सेकंड का clip download हो गया`);
+        showToast(`✅ ${seconds} सेकंड की ${isGif?"GIF":"MP4"} download हो गई`);
     }catch(err){
         console.error(err);
         fill.style.width="100%";text.textContent="❌ Error — Advanced Cutter try करें";
         alert("Quick clip error: "+err.message+"\n\n'Advanced Cutter में लें' use करें");
-    }finally{
-        state.quickProcessing=false;
-        setTimeout(()=>{prog.classList.remove("show");fill.style.width="0%";},3500);
-    }
-}
-
-/* ========== QUICK 5 SEC GIF ========== */
-async function quickGif(videoUrl,cardId){
-    if(state.quickProcessing){showToast("एक clip बन रही है, प्रतीक्षा करें");return;}
-    state.quickProcessing=true;
-    const prog=document.getElementById("prog_"+cardId),text=document.getElementById("text_"+cardId),fill=document.getElementById("fill_"+cardId);
-    prog.classList.add("show");fill.style.width="5%";
-    text.textContent="📥 GIF के लिए video download...";
-    try{
-        const blob=await fetchVideoBlob(videoUrl);
-        fill.style.width="30%";text.textContent="🎞️ FFmpeg engine लोड...";
-        await loadFFmpeg();
-        const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
-        const inN="gin_"+Date.now()+".mp4",outN="gout_"+Date.now()+".gif";
-        fill.style.width="50%";text.textContent="🎨 5 sec की चलती GIF बनाई जा रही है...";
-        await ffmpeg.writeFile(inN,await fetchFile(blob));
-        await ffmpeg.exec(["-ss","0","-i",inN,"-t","5","-vf","fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse","-f","gif",outN]);
-        fill.style.width="90%";text.textContent="💾 GIF तैयार...";
-        const data=await ffmpeg.readFile(outN);
-        const outBlob=new Blob([data.buffer],{type:"image/gif"});
-        try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
-        fill.style.width="100%";text.textContent="✅ GIF download हो रही है!";
-        const url=URL.createObjectURL(outBlob);
-        const a=document.createElement("a");a.href=url;a.download="news_clip_5sec.gif";
-        document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(url),5000);
-        showToast("✅ 5 सेकंड की GIF download हो गई");
-    }catch(err){
-        console.error(err);
-        fill.style.width="100%";text.textContent="❌ GIF error — ⚡10 sec MP4 try करें";
-        alert("GIF error: "+err.message+"\n\n⚡10 sec MP4 clip try करें।");
     }finally{
         state.quickProcessing=false;
         setTimeout(()=>{prog.classList.remove("show");fill.style.width="0%";},3500);
@@ -565,7 +532,7 @@ async function copyURL(url){
         showToast("✅ URL copy हो गया");
     }catch(e){prompt("URL copy करें:",url);}
 }
-function showYouTubeInfo(){alert("YouTube video को directly rip करना illegal है — यह site वह सुविधा नहीं देती।\n\n✅ '📚 Authorized 10/30s Clip खोजें' दबाएँ — app Commons/Archive से उसी topic की real authorized video लाकर MP4/GIF download करा देगा।");}
+function showYouTubeInfo(){alert("YouTube video को directly rip करना illegal है — यह site वह सुविधा नहीं देती।\n\n✅ '📚 Authorized 10/30s Clip खोजें' दबाएँ — app Commons/Archive से उसी topic की real authorized video लाकर MP4/GIF clip download करा देगा।");}
 
 /* ========== CUTTER ========== */
 document.getElementById("videoFile").addEventListener("change",e=>{const f=e.target.files[0];if(f)loadLocalVideo(f);});
@@ -597,29 +564,39 @@ function selectDuration(d){
 document.getElementById("startRange").addEventListener("input",e=>{document.getElementById("startTime").value=e.target.value;});
 document.getElementById("startTime").addEventListener("input",e=>{let v=Number(e.target.value);if(!Number.isFinite(v))v=0;v=Math.max(0,Math.min(v,state.videoDuration));e.target.value=v;document.getElementById("startRange").value=v;});
 
-async function createClip(){
+async function runClip(isGif){
     if(!state.sourceFile){alert("पहले Video चुनें।");return;}
     let start=Number(document.getElementById("startTime").value);
     let length=Number(document.getElementById("clipLength").value);
     if(!Number.isFinite(start)||!Number.isFinite(length)||length<=0){alert("Start/Length सही डालें।");return;}
     if(start+length>state.videoDuration){length=state.videoDuration-start;document.getElementById("clipLength").value=length;}
     if(length<=0){alert("Duration सही नहीं।");return;}
+    if(isGif&&length>30){alert("GIF के लिए 30 सेकंड से कम length रखें (file बड़ी हो जाती है)।");return;}
     try{
         await loadFFmpeg();
         const ffmpeg=state.ffmpeg,fetchFile=window.NewsClipFFmpeg.fetchFile;
         setProgress(5,"Engine तैयार...");
-        const inN="in_"+Date.now()+".mp4",outN="clip_"+Date.now()+".mp4";
+        const inN="in_"+Date.now()+".mp4";
+        const outN="clip_"+Date.now()+(isGif?".gif":".mp4");
         await ffmpeg.writeFile(inN,await fetchFile(state.sourceFile));
-        setProgress(20,"Clip काटी जा रही है...");
-        await ffmpeg.exec(["-ss",String(start),"-i",inN,"-t",String(length),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
-        setProgress(90,"MP4 तैयार...");
+        setProgress(20,"Clip बन रही है...");
+        if(isGif){
+            await ffmpeg.exec(["-ss",String(start),"-i",inN,"-t",String(length),"-vf","fps=10,scale=320:-2:flags=lanczos,split[v0][v1];[v0]palettegen[p];[v1][p]paletteuse","-loop","0",outN]);
+        }else{
+            await ffmpeg.exec(["-ss",String(start),"-i",inN,"-t",String(length),"-map","0:v:0","-map","0:a?","-c:v","libx264","-preset","ultrafast","-crf","28","-c:a","aac","-b:a","128k","-movflags","+faststart",outN]);
+        }
+        setProgress(90,"File तैयार...");
         const data=await ffmpeg.readFile(outN);
-        const blob=new Blob([data.buffer],{type:"video/mp4"});
+        const blob=new Blob([data.buffer],{type:isGif?"image/gif":"video/mp4"});
         if(state.outputUrl)URL.revokeObjectURL(state.outputUrl);
         state.outputUrl=URL.createObjectURL(blob);
-        document.getElementById("outputVideo").src=state.outputUrl;
+        const vid=document.getElementById("outputVideo"),gif=document.getElementById("outputGif");
+        if(isGif){vid.style.display="none";gif.style.display="block";gif.src=state.outputUrl;}
+        else{gif.style.display="none";vid.style.display="block";vid.src=state.outputUrl;}
         const dl=document.getElementById("downloadOutput");
-        dl.href=state.outputUrl;dl.download="news_clip_"+Math.round(length)+"sec.mp4";
+        dl.href=state.outputUrl;
+        dl.download=isGif?("news_clip_"+Math.round(length)+"sec.gif"):("news_clip_"+Math.round(length)+"sec.mp4");
+        dl.textContent=isGif?"⬇️ GIF Download करें":"⬇️ MP4 Clip Download करें";
         document.getElementById("outputBox").style.display="block";
         setProgress(100,"✅ Clip तैयार");
         try{await ffmpeg.deleteFile(inN);await ffmpeg.deleteFile(outN);}catch(e){}
@@ -629,6 +606,8 @@ async function createClip(){
         alert("Clip नहीं बन सकी। छोटी video से test करें।");
     }
 }
+function createClip(){runClip(false);}
+function createClipGif(){runClip(true);}
 
 /* ========== FFMPEG (worker.js same-origin fix) ========== */
 async function loadFFmpeg(){
@@ -670,6 +649,7 @@ function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\
 document.getElementById("headline").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();searchAll();}});
 document.getElementById("settingsModal").addEventListener("click",e=>{if(e.target.id==="settingsModal")closeSettings();});
 
+/* ========== NETWORK SELF-TEST ========== */
 window.addEventListener("load",async ()=>{
     try{
         await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&meta=siteinfo");
