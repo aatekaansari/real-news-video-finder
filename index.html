@@ -43,15 +43,21 @@
         .ai-header { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; background:var(--card); border-bottom:1px solid var(--border); position:fixed; top:0; width:100%; z-index:10; }
         .back-btn { background:none; border:none; color:#fff; font-size:1rem; display:flex; align-items:center; gap:4px; cursor:pointer; font-weight:bold; }
         .ai-content { padding:20px 15px; margin-top:40px; max-width:900px; margin-left:auto; margin-right:auto; }
-        .selected-topic-box { background:rgba(16,185,129,0.1); border:1px solid var(--success); padding:15px; border-radius:8px; margin-bottom:15px; }
+        .selected-topic-box { background:rgba(16,185,129,0.1); border:1px solid var(--success); padding:15px; border-radius:8px; margin-bottom:12px; }
         .selected-topic-box h4 { color:var(--success); font-size:0.85rem; margin-bottom:5px; display:flex; justify-content:space-between; }
         .selected-topic-box p { font-size:1rem; font-weight:bold; color:#fff; }
-        .comp-data-box { background:rgba(239,68,68,0.05); border:1px dashed #ef4444; padding:12px; border-radius:8px; margin-bottom:20px; }
-        .comp-data-box h5 { color:#fca5a5; font-size:0.85rem; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+        .selected-topic-box .ch-line { font-size:0.75rem; color:var(--text-muted); margin-top:6px; }
+        .url-row { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text-muted); }
+        .url-row a { color:var(--primary); text-decoration:none; font-weight:bold; }
+        .url-row span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .player-box { margin-bottom:12px; }
+        .player-box iframe { width:100%; aspect-ratio:16/9; border:0; border-radius:10px; background:#000; }
+        .transcript-btn { background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid #ef4444; padding:12px; border-radius:8px; font-weight:bold; width:100%; font-size:0.95rem; display:flex; justify-content:center; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; }
+        .comp-data-box { background:rgba(239,68,68,0.05); border:1px dashed #ef4444; padding:12px; border-radius:8px; margin-bottom:15px; }
         .data-label { display:flex; justify-content:space-between; align-items:center; margin:8px 0 4px; }
         .data-label strong { font-size:0.7rem; color:#f8fafc; }
-        .comp-data-text { font-size:0.75rem; color:#94a3b8; background:#0f172a; padding:8px; border-radius:4px; max-height:150px; overflow-y:auto; }
-        .refresh-data-btn { background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid #ef4444; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px; }
+        .comp-data-text { font-size:0.75rem; color:#94a3b8; background:#0f172a; padding:8px; border-radius:4px; max-height:150px; overflow-y:auto; word-break:break-word; }
+        .manual-box { width:100%; min-height:90px; background:#0f172a; border:1px dashed var(--border); color:#e2e8f0; border-radius:4px; padding:8px; font-size:0.8rem; }
         .generate-btn { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:none; padding:15px; border-radius:8px; font-weight:bold; width:100%; font-size:1.1rem; display:flex; justify-content:center; align-items:center; gap:8px; cursor:pointer; margin-bottom:20px; }
         .output-box { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:15px; margin-bottom:15px; display:none; }
         .output-box.show { display:block; }
@@ -99,25 +105,39 @@
             <div class="selected-topic-box">
                 <h4>🎯 Selected Topic: <button class="copy-btn" onclick="copyText('selectedTopicText', this)"><span class="material-icons-round">content_copy</span> Copy</button></h4>
                 <p id="selectedTopicText">News Title Here</p>
+                <div class="ch-line">📺 Competitor: <span id="selectedChannelText">-</span></div>
                 <input type="hidden" id="selectedChannelHidden">
                 <input type="hidden" id="selectedVideoIdHidden">
             </div>
 
-            <div class="comp-data-box">
-                <h5><span style="display:flex;align-items:center;gap:5px;"><span class="material-icons-round" style="font-size:16px;">troubleshoot</span> Live Fetched Data</span>
-                <button class="refresh-data-btn" onclick="retryFetchData()"><span class="material-icons-round" style="font-size:14px;">refresh</span> Retry</button></h5>
+            <div class="url-row">
+                <span class="material-icons-round" style="color:var(--primary)">link</span>
+                <span id="videoUrlText">https://youtu.be/...</span>
+                <button class="copy-btn" onclick="copyText('videoUrlText', this)"><span class="material-icons-round">content_copy</span></button>
+                <a id="videoOpenLink" href="#" target="_blank">YouTube ↗</a>
+            </div>
 
-                <div class="data-label"><strong>Original Competitor Tags:</strong><button class="copy-btn" onclick="copyText('compFetchedTags', this)"><span class="material-icons-round">content_copy</span> Copy</button></div>
-                <div class="comp-data-text" id="compFetchedTags">Fetching real tags...</div>
+            <div class="player-box"><iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
+
+            <div class="comp-data-box">
+                <div class="data-label"><strong>🏷️ Original Competitor Tags:</strong><button class="copy-btn" onclick="copyText('compFetchedTags', this)"><span class="material-icons-round">content_copy</span> Copy</button></div>
+                <div class="comp-data-text" id="compFetchedTags">⏳ Loading tags...</div>
 
                 <div class="data-label"><strong>📄 Original Description:</strong><button class="copy-btn" onclick="copyHidden('compFetchedDesc', this)"><span class="material-icons-round">content_copy</span> Copy</button></div>
-                <div class="comp-data-text" id="compFetchedDescView">Fetching description...</div>
+                <div class="comp-data-text" id="compFetchedDescView">⏳ Loading description...</div>
 
                 <div class="data-label"><strong>🎙️ पूरा स्क्रिप्ट (Spoken Transcript):</strong><button class="copy-btn" onclick="copyHidden('compFetchedTranscriptFull', this)"><span class="material-icons-round">content_copy</span> Copy</button></div>
-                <div class="comp-data-text" id="compFetchedTranscript" style="max-height:250px;">Extracting spoken human script...</div>
+                <div class="comp-data-text" id="compFetchedTranscript" style="max-height:250px;">⏳ Loading transcript...</div>
 
                 <input type="hidden" id="compFetchedDesc">
                 <input type="hidden" id="compFetchedTranscriptFull">
+            </div>
+
+            <button class="transcript-btn" onclick="fetchTranscriptOnly()"><span class="material-icons-round">subtitles</span> 🎙️ ट्रांसक्रिप्ट दोबारा निकालें (Retry)</button>
+
+            <div style="margin-bottom:12px;">
+                <div class="data-label"><strong>✍️ Manual स्क्रिप्ट पेस्ट (पक्का विकल्प):</strong></div>
+                <textarea id="manualTranscript" class="manual-box" placeholder="youtubetotranscript.com से स्क्रिप्ट कॉपी करके यहां पेस्ट करें — Gemini इसी का इस्तेमाल करेगा..."></textarea>
             </div>
 
             <button class="generate-btn" onclick="startAIProcessing()"><span class="material-icons-round">auto_awesome</span> स्क्रिप्ट और SEO जनरेट करें</button>
@@ -208,11 +228,13 @@
                 listContainer.innerHTML = html;
             };
 
+            // SOURCE 1: Vercel
             try {
                 const r = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
                 if (r.ok) { const d = await r.json(); if (d.status === 'ok' && d.items && d.items.length) return updateUI(d.channelName || handle, d.items); }
             } catch (e) {}
 
+            // SOURCE 2: Worker
             try {
                 const r = await fetch(`${ytWorkerUrl}/?channel_id=${encodeURIComponent(handle)}`);
                 if (r.ok) {
@@ -236,6 +258,7 @@
             listContainer.innerHTML = `<li style="padding:15px;color:#ef4444;text-align:center;font-size:0.85rem;">चैनल लोड नहीं हो पाया। <button class="retry-btn" onclick="fetchChannelData('${handle}','${cardId}')">Retry</button></li>`;
         }
 
+        // ✅ v8.2: पुराना working pattern — showLoader + await + hideLoader
         async function fetchCompetitorData(videoId) {
             const elTags = document.getElementById('compFetchedTags');
             const elTranscript = document.getElementById('compFetchedTranscript');
@@ -243,79 +266,131 @@
             const elDescHidden = document.getElementById('compFetchedDesc');
             const elFullTranscript = document.getElementById('compFetchedTranscriptFull');
 
-            elTags.innerText = "Fetching real tags...";
-            elTranscript.innerText = "Extracting spoken human script...";
-            elDescView.innerText = "Fetching description...";
-            elDescHidden.value = ""; elFullTranscript.value = "";
+            // ✅ पहले reset करो (पुराने जैसा)
+            elTags.innerText = "⏳ Fetching real tags...";
+            elTranscript.innerText = "⏳ Extracting spoken script...";
+            elDescView.innerText = "⏳ Fetching description...";
+            elDescHidden.value = "";
+            elFullTranscript.value = "";
             if (!videoId) return;
 
             const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
             let tags = [], desc = "", transcript = "";
 
-            // SOURCE 1: Vercel (InnerTube + YTToTranscript + Kome)
+            // SOURCE 1: Worker (सबसे reliable — tags+desc confirmed आते हैं)
             try {
-                const r = await fetch(`/api/yt?videoId=${videoId}`);
-                if (r.ok) { const d = await r.json(); if (d.status === 'ok') { tags = d.tags || []; desc = d.desc || ""; transcript = d.transcript || ""; } }
-            } catch (e) {}
+                const r = await fetch(`${ytWorkerUrl}/?videoId=${videoId}`);
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.status === 'ok') {
+                        tags = d.tags || [];
+                        desc = d.desc || "";
+                        transcript = d.transcript || "";
+                    }
+                }
+            } catch (e) {
+                console.log("Worker fetch error:", e.message);
+            }
 
-            // SOURCE 2: Worker v7 (InnerTube + YTToTranscript + Kome)
+            // SOURCE 2: Vercel (जो छूटा वह भरो)
             if (!tags.length || !desc || !transcript) {
                 try {
-                    const r = await fetch(`${ytWorkerUrl}/?videoId=${videoId}`);
+                    const r = await fetch(`/api/yt?videoId=${videoId}`);
                     if (r.ok) {
                         const d = await r.json();
                         if (d.status === 'ok') {
-                            if (!tags.length && d.tags) tags = d.tags;
+                            if (!tags.length && d.tags && d.tags.length) tags = d.tags;
                             if (!desc && d.desc) desc = d.desc;
                             if (!transcript && d.transcript) transcript = d.transcript;
                         }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.log("Vercel fetch error:", e.message);
+                }
             }
 
-            // SOURCE 3: Kome.ai direct (browser)
-            if (!transcript) {
-                try {
-                    const r = await fetch('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) });
-                    if (r.ok) { const d = await r.json(); if (d.transcript) transcript = d.transcript; }
-                } catch (e) {}
-            }
-
-            elTags.innerText = tags.length ? tags.join(", ") : "Breaking News, Latest Updates, Viral News";
+            // ✅ तुरंत tags+desc UI अपडेट
+            elTags.innerText = tags.length ? tags.join(", ") : "Tags नहीं मिले — Breaking News, Latest Updates";
             elDescHidden.value = desc;
             elDescView.innerText = desc ? desc.substring(0, 3000) : "डिस्क्रिप्शन नहीं मिली।";
+
+            // SOURCE 3: Kome.ai (transcript के लिए)
+            if (!transcript) {
+                try {
+                    const r = await fetch('https://api.kome.ai/api/tools/youtube-transcripts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ video_id: videoId, format: true })
+                    });
+                    if (r.ok) {
+                        const d = await r.json();
+                        if (d.transcript) transcript = d.transcript;
+                    }
+                } catch (e) {
+                    console.log("Kome error:", e.message);
+                }
+            }
+
+            // ✅ Transcript UI अपडेट
             elFullTranscript.value = transcript;
             elTranscript.innerText = transcript
                 ? "🎙️ पूरा स्क्रिप्ट (" + transcript.trim().split(/\s+/).length + " शब्द): " + transcript.replace(/\s+/g, ' ').trim().substring(0, 30000)
-                : "❌ सभी सोर्स (YouTube captions + YouTubeToTranscript + Kome) खाली लौटे। Retry दबाएं या दूसरी वीडियो try करें।";
+                : "⚠️ ऑटो स्क्रिप्ट नहीं मिला। Manual बॉक्स में youtubetotranscript.com से पेस्ट करें।";
         }
 
-        async function retryFetchData() {
+        async function fetchTranscriptOnly() {
             const videoId = document.getElementById('selectedVideoIdHidden').value;
             if (!videoId) return alert("वीडियो ID नहीं मिली!");
-            showLoader("असली सबटाइटल खींचे जा रहे हैं...");
+            showLoader("🎙️ स्क्रिप्ट दोबारा निकाला जा रहा है...");
+            const elTranscript = document.getElementById('compFetchedTranscript');
+            const elFull = document.getElementById('compFetchedTranscriptFull');
+            const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
+            let tr = "";
+
+            try { const r = await fetch(`${ytWorkerUrl}/?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {}
+            if (!tr) { try { const r = await fetch(`/api/yt?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
+            if (!tr) { try { const r = await fetch('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) }); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
+
+            elFull.value = tr;
+            elTranscript.innerText = tr
+                ? "🎙️ पूरा स्क्रिप्ट (" + tr.trim().split(/\s+/).length + " शब्द): " + tr.replace(/\s+/g, ' ').trim().substring(0, 30000)
+                : "⚠️ ऑटो स्क्रिप्ट नहीं मिला। Manual बॉक्स में पेस्ट करें।";
+            hideLoader();
+        }
+
+        // ✅ v8.2: पुराना pattern — showLoader → await → hideLoader
+        async function openAiModal(encodedTitle, encodedHandle, videoId) {
+            const handle = decodeURIComponent(encodedHandle);
+            document.getElementById('selectedTopicText').innerText = decodeURIComponent(encodedTitle);
+            document.getElementById('selectedChannelText').innerText = handle;
+            document.getElementById('selectedChannelHidden').value = handle;
+            document.getElementById('selectedVideoIdHidden').value = videoId;
+            document.getElementById('videoUrlText').innerText = `https://youtu.be/${videoId}`;
+            document.getElementById('videoOpenLink').href = `https://youtu.be/${videoId}`;
+            document.getElementById('ytPlayer').src = `https://www.youtube-nocookie.com/embed/${videoId}`;
+            document.getElementById('manualTranscript').value = '';
+            document.querySelectorAll('.output-box').forEach(b => b.classList.remove('show'));
+            document.getElementById('aiModal').classList.add('active');
+
+            // ✅ पुराने जैसा — loader दिखाओ, await करो, loader हटाओ
+            showLoader("🔍 Tags, Description और Script लोड हो रहे हैं...");
             await fetchCompetitorData(videoId);
             hideLoader();
         }
 
-        async function openAiModal(encodedTitle, encodedHandle, videoId) {
-            document.getElementById('selectedTopicText').innerText = decodeURIComponent(encodedTitle);
-            document.getElementById('selectedChannelHidden').value = decodeURIComponent(encodedHandle);
-            document.getElementById('selectedVideoIdHidden').value = videoId;
-            document.querySelectorAll('.output-box').forEach(b => b.classList.remove('show'));
-            document.getElementById('aiModal').classList.add('active');
-            showLoader("वीडियो से असली सबटाइटल और इंसानी आवाज़ लोड हो रही है...");
-            await fetchCompetitorData(videoId);
-            hideLoader();
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.remove('active');
+            document.getElementById('ytPlayer').src = "";
         }
-        function closeAiModal() { document.getElementById('aiModal').classList.remove('active'); }
 
         async function startAIProcessing() {
             const title = document.getElementById('selectedTopicText').innerText;
             const compChannel = document.getElementById('selectedChannelHidden').value;
             const geminiApi = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
             const realTags = document.getElementById('compFetchedTags').innerText;
-            const fullTranscript = document.getElementById('compFetchedTranscriptFull').value;
+            const autoTranscript = document.getElementById('compFetchedTranscriptFull').value;
+            const manualTranscript = document.getElementById('manualTranscript').value.trim();
+            const fullTranscript = manualTranscript || autoTranscript;
             const realDesc = document.getElementById('compFetchedDesc').value;
             const wordCount = fullTranscript ? fullTranscript.trim().split(/\s+/).length : 0;
 
