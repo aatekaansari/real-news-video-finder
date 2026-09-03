@@ -84,10 +84,6 @@
         <div class="sidebar-close"><button onclick="toggleSidebar()">×</button></div>
         <h2 style="color:#fff; margin-bottom:20px; font-size:1.2rem;">API Settings</h2>
         <div class="setting-box">
-            <label>YouTube Worker URL</label>
-            <input type="text" id="ytApiUrl" placeholder="https://youtube-api.babu902654.workers.dev">
-        </div>
-        <div class="setting-box">
             <label>Gemini Worker URL</label>
             <input type="text" id="geminiApiUrl" placeholder="https://storystudio-api.babu902654.workers.dev">
         </div>
@@ -180,13 +176,10 @@
     </div>
 
     <script>
-        const DEFAULT_YT_API = "https://youtube-api.babu902654.workers.dev";
         const DEFAULT_GEMINI_API = "https://storystudio-api.babu902654.workers.dev";
-
         let competitors = JSON.parse(localStorage.getItem("aryan_competitors") || "[]");
 
         window.onload = () => {
-            document.getElementById('ytApiUrl').value = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
             document.getElementById('geminiApiUrl').value = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
             if(competitors.length > 0) loadAllChannels();
         };
@@ -199,10 +192,9 @@
         }
         
         function saveSettings() {
-            localStorage.setItem("yt_api_url", document.getElementById('ytApiUrl').value.trim());
             localStorage.setItem("gemini_api_url", document.getElementById('geminiApiUrl').value.trim());
             toggleSidebar();
-            alert("✅ API Settings Saved!");
+            alert("✅ Settings Saved!");
         }
 
         const showLoader = (msg) => { document.getElementById('loaderText').innerText = msg; document.getElementById('loader').style.display = 'flex'; };
@@ -240,7 +232,6 @@
                 return;
             }
             container.innerHTML = '';
-            const ytApi = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
 
             for (let handle of competitors) {
                 const cardId = 'card_' + handle.replace('@','');
@@ -253,81 +244,45 @@
                     </div>
                     <ul class="video-list" id="list_${cardId}"></ul>
                 </div>`;
-                fetchChannelData(ytApi, handle, cardId);
+                fetchChannelData(handle, cardId);
             }
         }
 
-        async function fetchChannelData(apiUrl, handle, cardId) {
+        // Vercel Serverless Backend से चैनल डेटा खींचना
+        async function fetchChannelData(handle, cardId) {
             const listContainer = document.getElementById(`list_${cardId}`);
-            let entriesData = [];
-
-            const updateUI = (name, data) => {
-                const headerH3 = document.querySelector(`#${cardId} h3`);
-                if(headerH3) headerH3.innerHTML = `${name} <span style="font-size:0.7rem; color:#10b981;">(Live)</span>`;
-                
-                let listHtml = '';
-                data.forEach(item => {
-                    const safeTitle = encodeURIComponent(item.title);
-                    const safeHandle = encodeURIComponent(handle);
-                    listHtml += `
-                    <li class="video-item" onclick="openAiModal('${safeTitle}', '${safeHandle}', '${item.videoId}')">
-                        <img src="https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg" alt="Thumb" class="vid-thumb" onerror="this.src='https://via.placeholder.com/90x50/1e293b/3b82f6?text=Video'">
-                        <div style="flex:1;">
-                            <p>${item.title}</p>
-                            <small>🕒 ${item.published}</small>
-                        </div>
-                    </li>`;
-                });
-                listContainer.innerHTML = listHtml;
-            };
-
-            // 1. Worker Endpoint Call (HTTPS)
+            
             try {
-                const res = await fetch(`${apiUrl}/?channel_id=${encodeURIComponent(handle)}`);
-                if (res.ok) {
-                    const xmlText = await res.text();
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                    let entries = xmlDoc.getElementsByTagName("entry");
-                    if(entries.length === 0) entries = xmlDoc.getElementsByTagName("item");
-
-                    if (entries.length > 0) {
-                        const authorEl = xmlDoc.getElementsByTagName("name")[0] || xmlDoc.getElementsByTagName("author")[0];
-                        let authorName = authorEl ? authorEl.textContent.trim() : handle;
-
-                        for (let i = 0; i < Math.min(6, entries.length); i++) {
-                            const title = entries[i].getElementsByTagName("title")[0]?.textContent || 'No Title';
-                            let videoId = entries[i].getElementsByTagName("yt:videoId")[0]?.textContent;
-                            if(!videoId) {
-                                const linkEl = entries[i].getElementsByTagName("link")[0];
-                                const match = linkEl ? linkEl.getAttribute("href").match(/v=([^&]+)/) : null;
-                                if(match) videoId = match[1];
-                            }
-                            if(videoId) entriesData.push({ title, published: "हाल ही में", videoId });
-                        }
-                        if(entriesData.length > 0) return updateUI(authorName, entriesData);
-                    }
-                }
-            } catch (e) {}
-
-            // 2. RSS2JSON Fallback
-            try {
-                const jsonFeedUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?user=' + handle.replace('@',''))}`;
-                const res = await fetch(jsonFeedUrl);
+                // Vercel Internal Backend Call
+                const res = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        entriesData = data.items.slice(0, 6).map(item => ({
-                            title: item.title,
-                            published: new Date(item.pubDate).toLocaleDateString('hi-IN', {day:'numeric', month:'short'}),
-                            videoId: item.guid.replace('yt:video:', '')
-                        }));
-                        return updateUI(data.feed.title || handle, entriesData);
+                        const headerH3 = document.querySelector(`#${cardId} h3`);
+                        if(headerH3) headerH3.innerHTML = `${data.channelName} <span style="font-size:0.7rem; color:#10b981;">(Live)</span>`;
+
+                        let listHtml = '';
+                        data.items.forEach(item => {
+                            const safeTitle = encodeURIComponent(item.title);
+                            const safeHandle = encodeURIComponent(handle);
+                            listHtml += `
+                            <li class="video-item" onclick="openAiModal('${safeTitle}', '${safeHandle}', '${item.videoId}')">
+                                <img src="https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg" alt="Thumb" class="vid-thumb" onerror="this.src='https://via.placeholder.com/90x50/1e293b/3b82f6?text=Video'">
+                                <div style="flex:1;">
+                                    <p>${item.title}</p>
+                                    <small>🕒 ${item.published}</small>
+                                </div>
+                            </li>`;
+                        });
+                        listContainer.innerHTML = listHtml;
+                        return;
                     }
                 }
-            } catch (rssErr) {}
+            } catch (e) {
+                console.error("Vercel Backend Fetch Error:", e);
+            }
 
-            listContainer.innerHTML = `<li style="padding:15px; color:#ef4444; text-align:center; font-size:0.85rem;">चैनल डेटा लोड नहीं हो पाया।</li>`;
+            listContainer.innerHTML = `<li style="padding:15px; color:#ef4444; text-align:center; font-size:0.85rem;">चैनल लोड नहीं हो पाया।</li>`;
         }
 
         async function fetchCompetitorData(videoId) {
@@ -341,23 +296,22 @@
             
             if(!videoId) return;
 
-            // Open Lemnoslife Free API
+            // Vercel Serverless Backend से टैग्स और विवरण निकालना
             try {
-                const infoRes = await fetch(`https://yt.lemnoslife.com/noKey/videos?id=${videoId}`);
-                if (infoRes.ok) {
-                    const infoData = await infoRes.json();
-                    const item = infoData?.items?.[0]?.snippet;
-                    if (item) {
-                        if (item.tags) elTags.innerText = item.tags.join(", ");
-                        else elTags.innerText = "News Today, Breaking News, Latest Updates";
-                        if (item.description) elDesc.value = item.description;
+                const res = await fetch(`/api/yt?videoId=${videoId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok') {
+                        if (data.tags && data.tags.length > 0) elTags.innerText = data.tags.join(", ");
+                        else elTags.innerText = "DLS News, Breaking News, UP News, Today News";
+                        if (data.desc) elDesc.value = data.desc;
                     }
                 }
             } catch(e) {
-                elTags.innerText = "News Today, Breaking News, Latest Updates";
+                elTags.innerText = "DLS News, Breaking News, UP News";
             }
 
-            elTranscript.innerText = "मुख्य बिंदु: AI शीर्षक और विवरण के आधार पर सर्वोत्तम वीडियो सामग्री बनाएगा।";
+            elTranscript.innerText = "मुख्य बिंदु: AI शीर्षकों और वीडियो विवरण के आधार पर 1 मिनट की पेशेवर समाचार सामग्री बनाएगा।";
         }
 
         async function retryFetchData() {
