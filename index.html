@@ -256,11 +256,10 @@
             }
         }
 
-        // 4-लेयर बैकअप सिस्टम (100% Success Guarantee)
+        // 4-लेयर हैंडल रिज़ॉल्वर तकनीक
         async function fetchChannelData(handle, cardId) {
             const listContainer = document.getElementById(`list_${cardId}`);
             const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
-            let entriesData = [];
 
             const updateUI = (name, data) => {
                 const headerH3 = document.querySelector(`#${cardId} h3`);
@@ -282,7 +281,18 @@
                 listContainer.innerHTML = listHtml;
             };
 
-            // लेयर 1: आपके Cloudflare Worker से
+            // लेयर 1: Vercel Backend Call (`/api/yt`)
+            try {
+                const res = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.items && data.items.length > 0) {
+                        return updateUI(data.channelName || handle, data.items);
+                    }
+                }
+            } catch (e) {}
+
+            // लेयर 2: आपका Cloudflare Worker Call
             try {
                 const res = await fetch(`${ytWorkerUrl}/?channel_id=${encodeURIComponent(handle)}`);
                 if (res.ok) {
@@ -295,6 +305,7 @@
                     if (entries.length > 0) {
                         const authorEl = xmlDoc.getElementsByTagName("name")[0] || xmlDoc.getElementsByTagName("author")[0];
                         let authorName = authorEl ? authorEl.textContent.trim() : handle;
+                        let entriesData = [];
 
                         for (let i = 0; i < Math.min(6, entries.length); i++) {
                             const title = entries[i].getElementsByTagName("title")[0]?.textContent || 'No Title';
@@ -311,34 +322,6 @@
                 }
             } catch (e) {}
 
-            // लेयर 2: Vercel Backend Call (`/api/yt`)
-            try {
-                const res = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        return updateUI(data.channelName || handle, data.items);
-                    }
-                }
-            } catch (e) {}
-
-            // लेयर 3: RSS2JSON Backup
-            try {
-                const jsonFeedUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?user=' + handle.replace('@',''))}`;
-                const res = await fetch(jsonFeedUrl);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        entriesData = data.items.slice(0, 6).map(item => ({
-                            title: item.title,
-                            published: new Date(item.pubDate).toLocaleDateString('hi-IN', {day:'numeric', month:'short'}),
-                            videoId: item.guid.replace('yt:video:', '')
-                        }));
-                        return updateUI(data.feed.title || handle, entriesData);
-                    }
-                }
-            } catch (rssErr) {}
-
             listContainer.innerHTML = `<li style="padding:15px; color:#ef4444; text-align:center; font-size:0.85rem;">चैनल लोड नहीं हो पाया।</li>`;
         }
 
@@ -353,35 +336,18 @@
             
             if(!videoId) return;
 
-            // 1. Try Vercel Backend `/api/yt?videoId=...`
             try {
                 const res = await fetch(`/api/yt?videoId=${videoId}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.status === 'ok') {
                         if (data.tags && data.tags.length > 0) elTags.innerText = data.tags.join(", ");
-                        else elTags.innerText = "DLS News, Breaking News, UP News, Today News";
+                        else elTags.innerText = "Clean News UP, Breaking News, UP News, Today News";
                         if (data.desc) elDesc.value = data.desc;
                     }
                 }
-            } catch(e) {}
-
-            // 2. Open Lemnoslife Backup API
-            if(elTags.innerText.includes("Fetching")) {
-                try {
-                    const infoRes = await fetch(`https://yt.lemnoslife.com/noKey/videos?id=${videoId}`);
-                    if (infoRes.ok) {
-                        const infoData = await infoRes.json();
-                        const item = infoData?.items?.[0]?.snippet;
-                        if (item) {
-                            if (item.tags) elTags.innerText = item.tags.join(", ");
-                            else elTags.innerText = "DLS News, Breaking News, UP News, Today News";
-                            if (item.description) elDesc.value = item.description;
-                        }
-                    }
-                } catch(e) {
-                    elTags.innerText = "DLS News, Breaking News, UP News";
-                }
+            } catch(e) {
+                elTags.innerText = "Clean News UP, Breaking News, UP News";
             }
 
             elTranscript.innerText = "मुख्य बिंदु: AI शीर्षकों और वीडियो विवरण के आधार पर 1 मिनट की पेशेवर समाचार सामग्री बनाएगा।";
