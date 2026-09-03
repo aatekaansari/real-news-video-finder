@@ -46,6 +46,7 @@
         .selected-topic-box { background:rgba(16,185,129,0.1); border:1px solid var(--success); padding:15px; border-radius:8px; margin-bottom:12px; }
         .selected-topic-box h4 { color:var(--success); font-size:0.85rem; margin-bottom:5px; display:flex; justify-content:space-between; }
         .selected-topic-box p { font-size:1rem; font-weight:bold; color:#fff; }
+        .selected-topic-box .ch-line { font-size:0.75rem; color:var(--text-muted); margin-top:6px; }
         .url-row { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text-muted); }
         .url-row a { color:var(--primary); text-decoration:none; font-weight:bold; }
         .url-row span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -104,6 +105,7 @@
             <div class="selected-topic-box">
                 <h4>🎯 Selected Topic: <button class="copy-btn" onclick="copyText('selectedTopicText', this)"><span class="material-icons-round">content_copy</span> Copy</button></h4>
                 <p id="selectedTopicText">News Title Here</p>
+                <div class="ch-line">📺 Competitor: <span id="selectedChannelText">-</span></div>
                 <input type="hidden" id="selectedChannelHidden">
                 <input type="hidden" id="selectedVideoIdHidden">
             </div>
@@ -127,7 +129,7 @@
                 <div class="comp-data-text" id="compFetchedDescView">Fetching description...</div>
 
                 <div class="data-label"><strong>🎙️ पूरा स्क्रिप्ट (Spoken Transcript):</strong><button class="copy-btn" onclick="copyHidden('compFetchedTranscriptFull', this)"><span class="material-icons-round">content_copy</span> Copy</button></div>
-                <div class="comp-data-text" id="compFetchedTranscript" style="max-height:250px;">ट्रांसक्रिप्ट बटन दबाएं या अपने आप लोड होने दें...</div>
+                <div class="comp-data-text" id="compFetchedTranscript" style="max-height:250px;">ट्रांसक्रिप्ट बटन दबाएं या लोड होने दें...</div>
 
                 <div class="data-label"><strong>✍️ Manual स्क्रिप्ट पेस्ट करें (पक्का विकल्प):</strong></div>
                 <textarea id="manualTranscript" class="manual-box" placeholder="youtubetotranscript.com से स्क्रिप्ट कॉपी करके यहां पेस्ट करें — Gemini इसी का इस्तेमाल करेगा..."></textarea>
@@ -157,6 +159,14 @@
             document.getElementById('geminiApiUrl').value = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
             if (competitors.length > 0) loadAllChannels();
         };
+
+        // ✅ v8.1: timeout वाला fetch — कुछ भी hang नहीं होगा
+        async function fetchT(url, opts = {}, ms = 9000) {
+            const c = new AbortController();
+            const t = setTimeout(() => c.abort(), ms);
+            try { return await fetch(url, { ...opts, signal: c.signal }); }
+            finally { clearTimeout(t); }
+        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebarOverlay');
@@ -225,12 +235,12 @@
             };
 
             try {
-                const r = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
+                const r = await fetchT(`/api/yt?handle=${encodeURIComponent(handle)}`);
                 if (r.ok) { const d = await r.json(); if (d.status === 'ok' && d.items && d.items.length) return updateUI(d.channelName || handle, d.items); }
             } catch (e) {}
 
             try {
-                const r = await fetch(`${ytWorkerUrl}/?channel_id=${encodeURIComponent(handle)}`);
+                const r = await fetchT(`${ytWorkerUrl}/?channel_id=${encodeURIComponent(handle)}`);
                 if (r.ok) {
                     const t = await r.text();
                     if (t.trim().startsWith('<')) {
@@ -252,25 +262,22 @@
             listContainer.innerHTML = `<li style="padding:15px;color:#ef4444;text-align:center;font-size:0.85rem;">चैनल लोड नहीं हो पाया। <button class="retry-btn" onclick="fetchChannelData('${handle}','${cardId}')">Retry</button></li>`;
         }
 
-        // ---------- ✅ v8 NEW: CORS-proxy se YouTube captions ----------
         const PROXIES = [
             u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
             u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
             u => 'https://corsproxy.io/?url=' + encodeURIComponent(u)
         ];
-
         function cleanProxyText(s) { return (s || '').replace(/\\u0026/g, '&').replace(/\\\//g, '/').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"'); }
 
         async function proxyTranscript(videoId) {
             for (const p of PROXIES) {
                 try {
-                    const r = await fetch(p(`https://www.youtube.com/watch?v=${videoId}`));
+                    const r = await fetchT(p(`https://www.youtube.com/watch?v=${videoId}`), {}, 10000);
                     if (!r.ok) continue;
                     const html = await r.text();
                     const ct = html.indexOf('"captionTracks":[');
                     if (ct === -1) continue;
-                    const arrEnd = html.indexOf(']', ct);
-                    const seg = html.substring(ct, arrEnd);
+                    const seg = html.substring(ct, html.indexOf(']', ct));
                     const objs = seg.match(/\{[^{}]*\}/g) || [];
                     let hiB = null, anyB = null;
                     for (const o of objs) {
@@ -282,41 +289,36 @@
                     }
                     const target = hiB || anyB;
                     if (!target) continue;
-                    const r2 = await fetch(p(cleanProxyText(target)));
+                    const r2 = await fetchT(p(cleanProxyText(target)), {}, 10000);
                     if (!r2.ok) continue;
-                    const xmlT = await r2.text();
-                    const tr = xmlT.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+                    const tr = (await r2.text()).replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
                     if (tr.length > 100) return tr;
                 } catch (e) {}
             }
             return "";
         }
 
+        // ✅ v8.1: tags+desc तुरंत UI में, transcript अलग से
         async function fetchCompetitorData(videoId) {
             const elTags = document.getElementById('compFetchedTags');
             const elTranscript = document.getElementById('compFetchedTranscript');
             const elDescView = document.getElementById('compFetchedDescView');
             const elDescHidden = document.getElementById('compFetchedDesc');
-            const elFullTranscript = document.getElementById('compFetchedTranscriptFull');
-
-            elTags.innerText = "Fetching real tags...";
-            elTranscript.innerText = "Extracting spoken human script...";
-            elDescView.innerText = "Fetching description...";
-            if (!videoId) return;
-
+            const elFull = document.getElementById('compFetchedTranscriptFull');
             const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
+
             let tags = [], desc = "", transcript = "";
 
-            // SOURCE 1: Vercel
+            // STEP 1: Worker (सबसे reliable) — tags+desc+transcript
             try {
-                const r = await fetch(`/api/yt?videoId=${videoId}`);
+                const r = await fetchT(`${ytWorkerUrl}/?videoId=${videoId}`);
                 if (r.ok) { const d = await r.json(); if (d.status === 'ok') { tags = d.tags || []; desc = d.desc || ""; transcript = d.transcript || ""; } }
             } catch (e) {}
 
-            // SOURCE 2: Worker v7
+            // STEP 2: Vercel (जो छूटा वह भरो)
             if (!tags.length || !desc || !transcript) {
                 try {
-                    const r = await fetch(`${ytWorkerUrl}/?videoId=${videoId}`);
+                    const r = await fetchT(`/api/yt?videoId=${videoId}`);
                     if (r.ok) {
                         const d = await r.json();
                         if (d.status === 'ok') {
@@ -328,37 +330,37 @@
                 } catch (e) {}
             }
 
-            // SOURCE 3: Kome.ai
-            if (!transcript) {
-                try {
-                    const r = await fetch('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) });
-                    if (r.ok) { const d = await r.json(); if (d.transcript) transcript = d.transcript; }
-                } catch (e) {}
-            }
-
-            // SOURCE 4: ✅ CORS-proxy captions
-            if (!transcript) transcript = await proxyTranscript(videoId);
-
+            // ✅ तुरंत tags+desc दिखाओ
             elTags.innerText = tags.length ? tags.join(", ") : "Breaking News, Latest Updates, Viral News";
             elDescHidden.value = desc;
             elDescView.innerText = desc ? desc.substring(0, 3000) : "डिस्क्रिप्शन नहीं मिली।";
-            elFullTranscript.value = transcript;
+
+            // STEP 3: transcript बाकी सोर्स
+            if (!transcript) {
+                try {
+                    const r = await fetchT('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) }, 9000);
+                    if (r.ok) { const d = await r.json(); if (d.transcript) transcript = d.transcript; }
+                } catch (e) {}
+            }
+            if (!transcript) transcript = await proxyTranscript(videoId);
+
+            elFull.value = transcript;
             elTranscript.innerText = transcript
                 ? "🎙️ पूरा स्क्रिप्ट (" + transcript.trim().split(/\s+/).length + " शब्द): " + transcript.replace(/\s+/g, ' ').trim().substring(0, 30000)
-                : "⚠️ ऑटो सोर्स खाली। ऊपर प्लेयर के नीचे Manual बॉक्स में youtubetotranscript.com से पेस्ट करें — Gemini वही इस्तेमाल करेगा।";
+                : "⚠️ ऑटो सोर्स खाली। Manual बॉक्स में youtubetotranscript.com से पेस्ट करें।";
         }
 
         async function fetchTranscriptOnly() {
             const videoId = document.getElementById('selectedVideoIdHidden').value;
             if (!videoId) return alert("वीडियो ID नहीं मिली!");
-            showLoader("🎙️ स्क्रिप्ट निकाला जा रहा है (5 सोर्स)...");
+            showLoader("🎙️ स्क्रिप्ट निकाला जा रहा है...");
             const elTranscript = document.getElementById('compFetchedTranscript');
             const elFull = document.getElementById('compFetchedTranscriptFull');
-            let tr = "";
             const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
-            try { const r = await fetch(`/api/yt?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {}
-            if (!tr) { try { const r = await fetch(`${ytWorkerUrl}/?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
-            if (!tr) { try { const r = await fetch('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) }); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
+            let tr = "";
+            try { const r = await fetchT(`/api/yt?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {}
+            if (!tr) { try { const r = await fetchT(`${ytWorkerUrl}/?videoId=${videoId}`); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
+            if (!tr) { try { const r = await fetchT('https://api.kome.ai/api/tools/youtube-transcripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video_id: videoId, format: true }) }, 9000); if (r.ok) { const d = await r.json(); tr = d.transcript || ""; } } catch (e) {} }
             if (!tr) tr = await proxyTranscript(videoId);
             elFull.value = tr;
             elTranscript.innerText = tr
@@ -368,15 +370,14 @@
         }
 
         async function openAiModal(encodedTitle, encodedHandle, videoId) {
+            const handle = decodeURIComponent(encodedHandle);
             document.getElementById('selectedTopicText').innerText = decodeURIComponent(encodedTitle);
-            document.getElementById('selectedChannelHidden').value = decodeURIComponent(encodedHandle);
+            document.getElementById('selectedChannelText').innerText = handle;
+            document.getElementById('selectedChannelHidden').value = handle;
             document.getElementById('selectedVideoIdHidden').value = videoId;
-
-            // ✅ v8: URL + player तुरंत
             document.getElementById('videoUrlText').innerText = `https://youtu.be/${videoId}`;
             document.getElementById('videoOpenLink').href = `https://youtu.be/${videoId}`;
             document.getElementById('ytPlayer').src = `https://www.youtube-nocookie.com/embed/${videoId}`;
-
             document.querySelectorAll('.output-box').forEach(b => b.classList.remove('show'));
             document.getElementById('aiModal').classList.add('active');
             fetchCompetitorData(videoId);
@@ -431,8 +432,8 @@
 `;
 
             try {
-                let gRes = await fetch(geminiApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: promptText }) });
-                if (!gRes.ok) gRes = await fetch(geminiApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }) });
+                let gRes = await fetchT(geminiApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: promptText }) }, 60000);
+                if (!gRes.ok) gRes = await fetchT(geminiApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }) }, 60000);
                 if (!gRes.ok) throw new Error(`Worker Error (${gRes.status})`);
 
                 const data = await gRes.json();
