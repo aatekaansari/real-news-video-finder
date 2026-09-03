@@ -144,8 +144,8 @@
                 <strong style="font-size:0.7rem; color:#f8fafc;">Original Competitor Tags:</strong>
                 <div class="comp-data-text" id="compFetchedTags">Fetching real tags...</div>
                 
-                <strong style="font-size:0.7rem; color:#f8fafc;">Extracted Core Key Points (मुख्य बातें):</strong>
-                <div class="comp-data-text" id="compFetchedTranscript">Extracting key news points...</div>
+                <strong style="font-size:0.7rem; color:#f8fafc;">🎙️ Spoken Script (इंसानी बोलचाल का ट्रांसक्रिप्ट):</strong>
+                <div class="comp-data-text" id="compFetchedTranscript">Extracting spoken human script...</div>
                 
                 <input type="hidden" id="compFetchedDesc">
             </div>
@@ -256,7 +256,6 @@
             }
         }
 
-        // 4-लेयर हैंडल रिज़ॉल्वर तकनीक
         async function fetchChannelData(handle, cardId) {
             const listContainer = document.getElementById(`list_${cardId}`);
             const ytWorkerUrl = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
@@ -281,7 +280,7 @@
                 listContainer.innerHTML = listHtml;
             };
 
-            // लेयर 1: Vercel Backend Call (`/api/yt`)
+            // Vercel Backend Call (`/api/yt`)
             try {
                 const res = await fetch(`/api/yt?handle=${encodeURIComponent(handle)}`);
                 if (res.ok) {
@@ -292,7 +291,7 @@
                 }
             } catch (e) {}
 
-            // लेयर 2: आपका Cloudflare Worker Call
+            // Worker Call Backup
             try {
                 const res = await fetch(`${ytWorkerUrl}/?channel_id=${encodeURIComponent(handle)}`);
                 if (res.ok) {
@@ -325,13 +324,14 @@
             listContainer.innerHTML = `<li style="padding:15px; color:#ef4444; text-align:center; font-size:0.85rem;">चैनल लोड नहीं हो पाया।</li>`;
         }
 
+        // असली ट्रांसक्रिप्ट (Real Spoken Subtitles) निकालने वाला फंक्शन
         async function fetchCompetitorData(videoId) {
             const elTags = document.getElementById('compFetchedTags');
             const elTranscript = document.getElementById('compFetchedTranscript');
             const elDesc = document.getElementById('compFetchedDesc');
 
             elTags.innerText = "Fetching real tags...";
-            elTranscript.innerText = "Extracting core news points...";
+            elTranscript.innerText = "Extracting spoken human script...";
             elDesc.value = "";
             
             if(!videoId) return;
@@ -342,21 +342,32 @@
                     const data = await res.json();
                     if (data.status === 'ok') {
                         if (data.tags && data.tags.length > 0) elTags.innerText = data.tags.join(", ");
-                        else elTags.innerText = "Clean News UP, Breaking News, UP News, Today News";
+                        else elTags.innerText = "Breaking News, Latest Updates, Viral News";
                         if (data.desc) elDesc.value = data.desc;
+
+                        if (data.transcript && data.transcript.length > 50) {
+                            // इंसानी बोलचाल के शब्दों में से फालतू शब्द साफ करना
+                            let cleanScript = data.transcript
+                                .replace(/(नमस्कार|स्वागत है|चैनल को सब्सक्राइब करें|वीडियो को लाइक करें|शेयर करें|दोस्तों|bell icon)/gi, '')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+
+                            elTranscript.innerText = "🎙️ असली ट्रांसक्रिप्ट: " + cleanScript.substring(0, 3000);
+                        } else {
+                            elTranscript.innerText = "यह वीडियो बिना सबटाइटल (Captions) के है। AI शीर्षक और विवरण से इंसानी बोलचाल की स्क्रिप्ट बनाएगा।";
+                        }
                     }
                 }
             } catch(e) {
-                elTags.innerText = "Clean News UP, Breaking News, UP News";
+                elTags.innerText = "Breaking News, Latest Updates";
+                elTranscript.innerText = "AI शीर्षक और विवरण से बोलचाल की भाषा में स्क्रिप्ट बनाएगा।";
             }
-
-            elTranscript.innerText = "मुख्य बिंदु: AI शीर्षकों और वीडियो विवरण के आधार पर 1 मिनट की पेशेवर समाचार सामग्री बनाएगा।";
         }
 
         async function retryFetchData() {
             const videoId = document.getElementById('selectedVideoIdHidden').value;
             if(!videoId) return alert("वीडियो ID नहीं मिली!");
-            showLoader("डेटा लोड हो रहा है...");
+            showLoader("असली सबटाइटल खींचे जा रहे हैं...");
             await fetchCompetitorData(videoId);
             hideLoader();
         }
@@ -372,7 +383,7 @@
             document.querySelectorAll('.output-box').forEach(box => box.classList.remove('show'));
             document.getElementById('aiModal').classList.add('active');
             
-            showLoader("मुख्य बिंदु लोड हो रहे हैं...");
+            showLoader("वीडियो से असली सबटाइटल और इंसानी आवाज़ लोड हो रही है...");
             await fetchCompetitorData(videoId);
             hideLoader();
         }
@@ -387,32 +398,32 @@
             const geminiApi = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
             
             const realTags = document.getElementById('compFetchedTags').innerText;
-            const corePoints = document.getElementById('compFetchedTranscript').innerText;
+            const spokenTranscript = document.getElementById('compFetchedTranscript').innerText;
             const realDesc = document.getElementById('compFetchedDesc').value;
             
-            showLoader("AI मुख्य खबरों का विश्लेषण करके स्क्रिप्ट बना रहा है...");
+            showLoader("AI इंसानी बोलचाल के लहज़े में स्क्रिप्ट तैयार कर रहा है...");
             
             const promptText = `
-                तुम एक प्रोफेशनल यूट्यूब न्यूज़ राइटर और SEO एक्सपर्ट हो।
+                तुम एक एक्सपर्ट यूट्यूब न्यूज़ एंकर और वॉइसओवर स्क्रिप्ट राइटर हो।
                 
-                [COMPETITOR DATA]:
+                [COMPETITOR RAW DATA]:
                 - Title: "${title}"
-                - Channel: "${compChannel}"
-                - Real Tags: "${realTags}"
-                - Core News Points: "${corePoints}"
+                - Competitor Channel: "${compChannel}"
+                - Competitor Real Tags: "${realTags}"
+                - Competitor Video Spoken Words (Transcript): "${spokenTranscript}"
                 
-                [INSTRUCTIONS]:
-                1. ओरिजिनल टाइटल और खबरों में से केवल मुख्य और काम की खबरों को चुनो।
-                2. फालतू की बातें हटाकर 1 मिनट की एक रोमांचक न्यूज़ वॉइसओवर स्क्रिप्ट तैयार करो।
-                3. भाषा एकदम साफ़ और आकर्षक हिंदी होनी चाहिए।
+                [INSTRUCTIONS FOR VOICE OVER SCRIPT]:
+                1. दिए गए "Competitor Video Spoken Words (Transcript)" को ध्यान से समझो।
+                2. ट्रांसक्रिप्ट में एंकर के बोलने का जो इंसानी लहज़ा (Human Tone, ड्रामा, सस्पेंस) है, बिल्कुल उसी तरह की 1 मिनट की मज़ेदार और प्राकृतिक वॉइसओवर स्क्रिप्ट तैयार करो।
+                3. एंकर की बोली ऐसी होनी चाहिए जैसे कोई असली इंसान बड़ी खबर सुना रहा हो।
                 
                 मुझे ये 4 चीज़ें बिल्कुल इसी फॉर्मेट में दो (बिना किसी अतिरिक्त टेक्स्ट के):
                 
                 [TITLE]
-                (ओरिजिनल टाइटल के मुख्य कीवर्ड्स मत हटाना। बस शुरू में "बड़ी खबर!" या "देखिए:" जोड़ दो। यह 100 कैरेक्टर से छोटा हो।)
+                (ओरिजिनल टाइटल के मुख्य कीवर्ड्स और आंकड़े मत हटाना। बस शुरू में "बड़ी खबर!" या "देखिए:" जोड़ दो। यह 100 कैरेक्टर से छोटा हो।)
                 
                 [SCRIPT]
-                (1 मिनट की बेस्ट वॉइसओवर स्क्रिप्ट। शुरुआत ऐसे करो: "नमस्कार! आप देख रहे हैं आर्यन न्यूज़ टेक..." खबर को बहुत ही आकर्षक तरीके से समझाओ।)
+                (1 मिनट की बेस्ट इंसानी वॉइसओवर स्क्रिप्ट। शुरुआत ऐसे करो: "नमस्कार! आप देख रहे हैं आर्यन न्यूज़ टेक..." खबर को बहुत ही आकर्षक और सनसनीखेज अंदाज़ में समझाओ।)
                 
                 [DESC]
                 (यहाँ हाई-रैंकिंग SEO डिस्क्रिप्शन लिखो। मुख्य खबरों का सारांश दो। अंत में यह लाइन लिखो: "Topic coverage similar to ${compChannel} and latest news updates." हैशटैग भी दो जैसे #AryanNewsTech #${compChannel.replace('@','')})
