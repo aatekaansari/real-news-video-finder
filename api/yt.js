@@ -1,4 +1,4 @@
-// api/yt.js - Vercel Serverless Function
+// api/yt.js - Super Handle Resolver
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   const { handle, videoId } = req.query;
 
-  // 1. Fetch Video Metadata (Tags & Description)
+  // 1. Fetch Video Metadata
   if (videoId) {
     try {
       const ytRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
@@ -33,13 +33,13 @@ export default async function handler(req, res) {
     }
   }
 
-  // 2. Fetch Channel Videos by Handle
+  // 2. Fetch Channel Videos
   if (!handle) return res.status(400).json({ error: 'Missing handle' });
 
   let cleanHandle = handle.replace('@', '').trim();
   let channelId = cleanHandle;
 
-  // Handle को UC... Channel ID में बदलने की 3-लेयर तकनीक
+  // Handle Resolution Algorithm
   if (!cleanHandle.startsWith('UC')) {
     const targetUrls = [
       `https://www.youtube.com/@${cleanHandle}`,
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
   try {
     const rssRes = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
     if (!rssRes.ok) throw new Error('RSS Fetch Failed');
-    
+
     const xmlText = await rssRes.text();
     const items = [];
     const entryMatches = xmlText.match(/<entry>[\s\S]*?<\/entry>/g) || [];
@@ -99,6 +99,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: 'ok', channelName, items });
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch YouTube feed' });
+    return res.status(500).json({ error: 'Failed' });
   }
 }
