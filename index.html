@@ -1,418 +1,521 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0b1220">
-<title>Real News Image & GIF Finder</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#f3f6fb;--text:#172033;--muted:#667085;--line:#dfe5ef;--red:#e11d48;--red2:#be123c;--purple:#7c3aed;--shadow:0 8px 30px rgba(15,23,42,.08)}
-body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-button,input,select,textarea{font-family:inherit}
-button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer}
-button:active{transform:scale(.95)}
-a{text-decoration:none}
-header{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid var(--line)}
-.header-inner{max-width:1100px;margin:auto;padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#e11d48,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900}
-.brand h1{font-size:16px}
-.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
-.settings-button{width:44px;height:44px;padding:0;font-size:20px}
-.container{max-width:1100px;margin:auto;padding:15px 13px 60px}
-.hero{background:linear-gradient(135deg,#0b1220,#312e81);color:#fff;border-radius:22px;padding:21px;margin-bottom:14px;box-shadow:var(--shadow)}
-.hero h2{font-size:21px;line-height:1.25;margin-bottom:8px}
-.hero p{color:#dbe4f2;font-size:12px;line-height:1.65}
-.search-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:var(--shadow)}
-label{display:block;font-size:12px;font-weight:900;margin-bottom:7px}
-textarea,input,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--text);outline:none;font-size:14px}
-textarea{min-height:70px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.search-button{width:100%;margin-top:12px;padding:14px;border-color:var(--red);background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:15px}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
-.chip{border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:10px;font-weight:900;background:#fff;cursor:pointer}
-.chip.active{background:#fff1f2;color:#be123c;border-color:#fb7185}
-.keywords{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.keyword{background:#eef2ff;color:#3730a3;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:800}
-.notice{margin-top:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:11px;padding:10px;font-size:10px;line-height:1.65}
-.status{margin:14px 2px 9px;color:var(--muted);font-size:12px;font-weight:800}
-.loader{display:none;text-align:center;padding:30px}
-.spinner{width:37px;height:37px;border:4px solid #e5e7eb;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:auto auto 10px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.results{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
-.img-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
-.photo{position:relative;aspect-ratio:16/9;background:#0f172a;overflow:hidden}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.badge{position:absolute;top:8px;left:8px;background:#111827;color:#fff;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:900;z-index:2}
-.gifbadge{position:absolute;top:8px;right:8px;background:#e11d48;color:#fff;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:900}
-.card-body{padding:11px}
-.card-title{font-size:12px;font-weight:900;line-height:1.45;margin-bottom:9px}
-.card-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.card-buttons a,.card-buttons button{text-align:center;padding:10px 5px;font-size:10px;border-radius:9px}
-.dl-photo{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;grid-column:1/-1}
-.make-gif{background:#ffe4e6;color:#be123c;border-color:#fda4af}
-.src-btn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
-.span2{grid-column:1/-1}
-.card-progress{margin-top:6px;font-size:10px;color:var(--muted);text-align:center;display:none}
-.card-progress.show{display:block}
-.empty{grid-column:1/-1;background:#fff;border:1px dashed #cbd5e1;border-radius:18px;padding:36px 20px;text-align:center;color:var(--muted)}
-.empty-icon{font-size:40px;margin-bottom:9px}
-.modal{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.65);display:none;align-items:flex-end;justify-content:center;padding:10px}
-.modal.show{display:flex}
-.modal-box{width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:22px 22px 14px 14px;padding:18px}
-.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
-.close{width:38px;height:38px;padding:0}
-.save-button{width:100%;margin-top:11px;background:#111827;color:#fff;border-color:#111827}
-.help{margin-top:12px;background:#f8fafc;border:1px solid var(--line);padding:11px;border-radius:11px;font-size:10px;line-height:1.7;color:#475569}
-.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,120px);z-index:9000;background:#111827;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.2);transition:.25s;max-width:90%;text-align:center}
-.toast.show{transform:translate(-50%,0)}
-footer{text-align:center;color:#94a3b8;font-size:10px;padding:22px 10px}
-@media(max-width:850px){.results{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.results{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>Aryan News AI Studio</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --primary: #3b82f6; --primary-hover: #2563eb;
+            --success: #10b981; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155;
+            --header-h: 60px; --footer-h: 50px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-top: var(--header-h); padding-bottom: calc(var(--footer-h) + 20px); min-height: 100vh; }
+        
+        header { background: var(--card); height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 100; }
+        header h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; color: #fff; margin: 0; }
+        header .menu-btn { color: #fff; background: none; border: none; font-size: 28px; cursor: pointer; }
+        footer { background: var(--card); height: var(--footer-h); display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--border); position: fixed; bottom: 0; width: 100%; z-index: 100; font-size: 0.8rem; color: var(--text-muted); }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); z-index: 1001; transition: 0.3s ease-in-out; border-right: 1px solid var(--border); padding: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
+        .sidebar.open { left: 0; }
+        .sidebar-close { text-align: right; margin-bottom: 20px; }
+        .sidebar-close button { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .setting-box { margin-bottom: 20px; }
+        .setting-box label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        .setting-box input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; font-size: 0.8rem; }
+        .save-btn { background: var(--primary); color: #fff; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        .container { padding: 15px; max-width: 900px; margin: 0 auto; }
+        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        .input-group input { flex: 1; background: var(--card); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; font-size: 0.9rem; outline: none; }
+        .input-group button { background: var(--primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .channel-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .channel-header { background: rgba(59, 130, 246, 0.1); padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .channel-header img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); background: var(--bg); object-fit: cover; }
+        .channel-header h3 { font-size: 1.1rem; color: #fff; margin: 0; }
+        .channel-header .remove-btn { margin-left: auto; color: #ef4444; background: none; border: none; cursor: pointer; }
+        
+        .video-list { list-style: none; padding: 0; margin: 0; }
+        .video-item { padding: 12px; border-bottom: 1px solid rgba(148,163,184,0.1); display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: 0.2s; }
+        .video-item:active { background: rgba(59, 130, 246, 0.1); }
+        .video-item:last-child { border-bottom: none; }
+        .vid-thumb { width: 90px; height: 50px; border-radius: 6px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); background: #000; }
+        .video-item p { font-size: 0.9rem; line-height: 1.3; color: #e2e8f0; margin: 0; font-weight: 500; }
+        .video-item small { display: block; color: var(--text-muted); font-size: 0.75rem; margin-top: 5px; }
+
+        .ai-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; padding-top: var(--header-h); padding-bottom: 20px; }
+        .ai-modal.active { display: block; }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--card); border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 10; }
+        .back-btn { background: none; border: none; color: #fff; font-size: 1rem; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 5px 0; font-weight: bold; }
+        .ai-content { padding: 20px 15px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        
+        .selected-topic-box { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .selected-topic-box h4 { color: var(--success); font-size: 0.85rem; margin-bottom: 5px; }
+        .selected-topic-box p { font-size: 1rem; font-weight: bold; color: #fff; }
+
+        .comp-data-box { background: rgba(239, 68, 68, 0.05); border: 1px dashed #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; position: relative; }
+        .comp-data-box h5 { color: #fca5a5; font-size: 0.85rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .comp-data-text { font-size: 0.75rem; color: #94a3b8; background: #0f172a; padding: 8px; border-radius: 4px; max-height: 90px; overflow-y: auto; margin-bottom: 10px; }
+        .refresh-data-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        
+        .generate-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; width: 100%; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
+
+        .output-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 15px; display: none; }
+        .output-box.show { display: block; }
+        .output-box label { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
+        .output-content { font-size: 0.95rem; line-height: 1.5; color: #f8fafc; white-space: pre-wrap; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: 6px; border: 1px dashed var(--border); }
+        .copy-btn { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+        .loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 3000; justify-content: center; align-items: center; flex-direction: column; gap: 15px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
-<header>
-<div class="header-inner">
-    <div class="brand">
-        <div class="logo">🖼️</div>
-        <div><h1>Real News Image & GIF Finder</h1><small>Headline → Bing/Google Images → 16:9 HD/FHD/4K + GIF</small></div>
-    </div>
-    <button class="settings-button" onclick="openSettings()">⚙️</button>
-</div>
-</header>
-
-<main class="container">
-
-<section class="hero">
-    <h2>📰 Headline डालें → सभी Real Images पाएँ → 16:9 में Download करें</h2>
-    <p>Bing + Google Serp worker से <b>हर topic की images</b> मिलती हैं। Quality dropdown: <b>1280×720 (HD) / 1920×1080 (FHD) / 3840×2160 (4K)</b> — सब 16:9। हर image से animated GIF भी बनती है।</p>
-</section>
-
-<section class="search-card">
-    <label>📰 News Headline</label>
-    <textarea id="headline" placeholder="उदाहरण: नरेंद्र मोदी चुनावी सभा"></textarea>
-    <div class="row">
-        <div><label>🖥️ Download Quality (16:9)</label>
-            <select id="qualitySel">
-                <option value="720">1280 × 720 — HD</option>
-                <option value="1080" selected>1920 × 1080 — Full HD</option>
-                <option value="2160">3840 × 2160 — 4K</option>
-            </select>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-close"><button onclick="toggleSidebar()">×</button></div>
+        <h2 style="color:#fff; margin-bottom:20px; font-size:1.2rem;">API Settings</h2>
+        <div class="setting-box">
+            <label>YouTube Worker URL</label>
+            <input type="text" id="ytApiUrl" placeholder="https://youtube-api.babu902654.workers.dev">
         </div>
-        <div><label>🔢 Results</label>
-            <select id="limitSel"><option value="18">18</option><option value="30">30</option><option value="45">45</option></select>
+        <div class="setting-box">
+            <label>Gemini Worker URL</label>
+            <input type="text" id="geminiApiUrl" placeholder="https://storystudio-api.babu902654.workers.dev">
         </div>
+        <button class="save-btn" onclick="saveSettings()">Save Settings</button>
     </div>
-    <label style="margin-top:12px">🔎 Search Keywords</label>
-    <input id="keywords" placeholder="Narendra Modi election rally">
-    <div class="keywords" id="keywordList"></div>
-    <div class="chips">
-        <div class="chip active" data-source="bing" onclick="toggleSource(this)">🅱️ Bing Images (सभी)</div>
-        <div class="chip active" data-source="google" onclick="toggleSource(this)">🔎 Google Serp Worker</div>
-        <div class="chip active" data-source="giphy" onclick="toggleSource(this)">🎞️ Giphy GIFs</div>
-        <div class="chip" data-source="commons" onclick="toggleSource(this)">🌐 Wikimedia (CC)</div>
-    </div>
-    <button class="search-button" onclick="searchAll()">🔍 IMAGE / GIF SEARCH</button>
-    <div class="notice">️ Bing/Google की images copyrighted हो सकती हैं — केवल news reporting / fair dealing (Copyright Act धारा 52) के तहत उपयोग करें। Wikimedia (CC) source भी उपलब्ध है। Downloads आपकी अपनी site के proxy से होती हैं — कोई CORS error नहीं।</div>
-</section>
 
-<div class="status" id="status">Headline डालकर Search दबाएँ।</div>
-<div class="loader" id="loader"><div class="spinner"></div><b>Images खोजी जा रही हैं...</b></div>
-<section class="results" id="results"><div class="empty"><div class="empty-icon">🖼️</div><b>अभी कोई result नहीं</b><p style="margin-top:7px">उदाहरण: <b>नरेंद्र मोदी</b></p></div></section>
+    <header>
+        <button class="menu-btn" onclick="toggleSidebar()"><span class="material-icons-round">menu</span></button>
+        <h1><span class="material-icons-round" style="color:var(--primary)">video_camera_front</span> Aryan News</h1>
+        <button class="menu-btn" onclick="loadAllChannels()" style="font-size:24px;"><span class="material-icons-round">refresh</span></button>
+    </header>
 
-<footer>Real News Image & GIF Finder — 16:9 HD / Full HD / 4K downloads + animated GIF</footer>
-</main>
-
-<div class="modal" id="settingsModal">
-    <div class="modal-box">
-        <div class="modal-head"><h3>⚙️ Settings</h3><button class="close" onclick="closeSettings()">✕</button></div>
-        <label>Google Serp Worker URL</label>
-        <input id="serpUrl" type="url" placeholder="https://...workers.dev/">
-        <label style="margin-top:12px">Giphy API Key (optional)</label>
-        <input id="giphyKey" type="password" placeholder="Giphy API Key">
-        <button class="save-button" onclick="saveKeys()">💾 Save करें</button>
-        <div class="help"><b>Giphy key:</b> developers.giphy.com → Create App → Free key।<br><b>Serp worker</b> default में आपके वाला URL है; अगर वह JSON न दे तो app खुद Bing पर fallback कर जाता है।</div>
-    </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-"use strict";
-const DEFAULT_SERP="https://google-serp-api.babu902654.workers.dev/";
-const state={bing:true,google:true,giphy:true,commons:false,results:[],busy:false};
-
-function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
-function openSettings(){document.getElementById("settingsModal").classList.add("show");document.getElementById("serpUrl").value=localStorage.getItem("serp_url")||DEFAULT_SERP;document.getElementById("giphyKey").value=localStorage.getItem("giphy_key")||"";}
-function closeSettings(){document.getElementById("settingsModal").classList.remove("show");}
-function saveKeys(){
-    const s=document.getElementById("serpUrl").value.trim(),g=document.getElementById("giphyKey").value.trim();
-    if(s)localStorage.setItem("serp_url",s);else localStorage.removeItem("serp_url");
-    if(g)localStorage.setItem("giphy_key",g);else localStorage.removeItem("giphy_key");
-    closeSettings();showToast("Settings save हो गईं");
-}
-function toggleSource(el){const s=el.dataset.source;state[s]=!state[s];el.classList.toggle("active",state[s]);}
-function getQuality(){const v=document.getElementById("qualitySel").value;return v==="720"?[1280,720]:v==="1080"?[1920,1080]:[3840,2160];}
-function ownProxy(u){return (location.protocol==="http:"||location.protocol==="https:")?"/api/proxy?url="+encodeURIComponent(u):null;}
-
-/* ========== FETCH VIA PROXY ========== */
-async function fetchViaProxy(url){
-    const p=ownProxy(url);
-    if(p){
-        const r=await fetch(p);
-        if(r.ok)return await r.blob();
-    }
-    const r2=await fetch(url);
-    if(!r2.ok)throw new Error("HTTP "+r2.status);
-    return await r2.blob();
-}
-
-/* ========== KEYWORDS ========== */
-const dictionary={"नरेंद्र मोदी":"Narendra Modi","मोदी":"Narendra Modi","योगी आदित्यनाथ":"Yogi Adityanath","योगी":"Yogi Adityanath","अखिलेश यादव":"Akhilesh Yadav","राहुल गांधी":"Rahul Gandhi","प्रियंका गांधी":"Priyanka Gandhi","ममता बनर्जी":"Mamata Banerjee","अरविंद केजरीवाल":"Arvind Kejriwal","चुनावी सभा":"election rally","चुनाव":"election","जनसभा":"public rally","रैली":"rally","भाषण":"speech","संबोधन":"address","प्रेस कॉन्फ्रेंस":"press conference","संसद":"Indian Parliament","उत्तर प्रदेश":"Uttar Pradesh India","यूपी":"Uttar Pradesh India","बिहार":"Bihar India","दिल्ली":"Delhi India","महाराष्ट्र":"Maharashtra India","भारत":"India","सरकार":"Indian government","मंत्री":"Indian minister","किसान":"Indian farmers","प्रदर्शन":"India protest","धरना":"India protest"};
-function makeKeywords(){
-    let text=document.getElementById("headline").value.trim();
-    if(!text)return "";
-    let q=text.toLowerCase();
-    Object.keys(dictionary).sort((a,b)=>b.length-a.length).forEach(k=>{q=q.replaceAll(k.toLowerCase(),dictionary[k]);});
-    ["में","का","की","के","से","पर","और","ने","को","यह","है","था","थी","थे","एक","बड़ा","बड़ी","आज","अब"].forEach(w=>{q=q.replaceAll(w," ");});
-    return q.replace(/[।,!?:;"'()]/g," ").replace(/\s+/g," ").trim();
-}
-function showKeywords(){const q=document.getElementById("keywords").value.trim();document.getElementById("keywordList").innerHTML=q.split(" ").filter(Boolean).slice(0,15).map(w=>`<span class="keyword">${escapeHTML(w)}</span>`).join("");}
-document.getElementById("headline").addEventListener("input",()=>{const q=makeKeywords();if(q){document.getElementById("keywords").value=q;showKeywords();}});
-document.getElementById("keywords").addEventListener("input",showKeywords);
-
-/* ========== SEARCH ALL ========== */
-async function searchAll(){
-    const headline=document.getElementById("headline").value.trim();
-    let query=document.getElementById("keywords").value.trim();
-    if(!headline){alert("पहले headline डालें");return;}
-    if(!query){query=makeKeywords();document.getElementById("keywords").value=query;}
-    showKeywords();
-    document.getElementById("loader").style.display="block";
-    document.getElementById("results").innerHTML="";
-    document.getElementById("status").textContent=`"${query}" की images खोजी जा रही हैं...`;
-    state.results=[];
-    const tasks=[];
-    if(state.bing)tasks.push(searchBing(query));
-    if(state.google)tasks.push(searchSerpWorker(query));
-    if(state.commons)tasks.push(searchCommons(query));
-    const gk=localStorage.getItem("giphy_key");
-    if(state.giphy&&gk)tasks.push(searchGiphy(query,gk));
-    const res=await Promise.allSettled(tasks);
-    res.forEach(r=>{if(r.status==="fulfilled")state.results.push(...r.value);});
-    renderResults();
-    document.getElementById("loader").style.display="none";
-}
-
-/* ========== BING IMAGES (proxy scrape) ========== */
-async function searchBing(query){
-    try{
-        const target="https://www.bing.com/images/search?q="+encodeURIComponent(query)+"&count="+document.getElementById("limitSel").value+"&form=HDRSC2";
-        const p=ownProxy(target);
-        let txt=null;
-        if(p){const r=await fetch(p);if(r.ok)txt=await r.text();}
-        if(!txt){const r=await fetch(target);if(r.ok)txt=await r.text();}
-        if(!txt)return [];
-        txt=txt.replace(/&quot;/g,'"').replace(/&amp;/g,"&").replace(/&#47;/g,"/");
-        const murls=[...txt.matchAll(/"murl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
-        const turls=[...txt.matchAll(/"turl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
-        const titles=[...txt.matchAll(/"t"\s*:\s*"([^"]*)"/g)].map(m=>m[1]);
-        const out=[];
-        const seen=new Set();
-        murls.forEach((mu,i)=>{
-            if(seen.has(mu))return;seen.add(mu);
-            out.push({source:"Bing",title:titles[i]||query,mime:"image/jpeg",preview:turls[i]||mu,downloadUrl:mu,pageUrl:"https://www.bing.com/images/search?q="+encodeURIComponent(query),ext:"jpg"});
-        });
-        return out.slice(0,Number(document.getElementById("limitSel").value));
-    }catch(e){console.error(e);return [];}
-}
-
-/* ========== GOOGLE SERP WORKER (smart fallback) ========== */
-function extractSerpImages(data){
-    const arr=data.images||data.image_results||data.results||data.items||(data.data&&data.data.images)||[];
-    if(!Array.isArray(arr))return [];
-    return arr.map(o=>{
-        const url=o.image||o.original||o.url||o.src||o.link;
-        if(!url||!/^https?:/.test(url))return null;
-        return {source:"Google",title:o.title||o.t||"Google Image",mime:"image/jpeg",preview:o.thumbnail||o.thumb||url,downloadUrl:url,pageUrl:o.page||o.source||url,ext:"jpg"};
-    }).filter(Boolean);
-}
-async function searchSerpWorker(query){
-    const base=(localStorage.getItem("serp_url")||DEFAULT_SERP).replace(/\/+$/,"/");
-    const eps=[base+"?q=",base+"search?q=",base+"api?q="];
-    for(const ep of eps){
-        try{
-            const r=await fetch(ep+encodeURIComponent(query),{headers:{Accept:"application/json"}});
-            if(!r.ok)continue;
-            const txt=await r.text();
-            const t=txt.trim();
-            if(t.startsWith("{")||t.startsWith("[")){
-                try{
-                    const imgs=extractSerpImages(JSON.parse(t));
-                    if(imgs.length)return imgs;
-                }catch(e){}
-            }
-            const un=t.replace(/&quot;/g,'"');
-            const murls=[...un.matchAll(/"murl"\s*:\s*"(https?:\/\/[^"]+)"/g)].map(m=>m[1]);
-            if(murls.length)return murls.map(mu=>({source:"Google",title:query,mime:"image/jpeg",preview:mu,downloadUrl:mu,pageUrl:base,ext:"jpg"}));
-            const srcs=[...un.matchAll(/<img[^>]+src="(https?:\/\/[^"]+)"/g)].map(m=>m[1]).filter(u=>/gstatic|googleusercontent|tbn/.test(u));
-            if(srcs.length)return srcs.map(mu=>({source:"Google",title:query,mime:"image/jpeg",preview:mu,downloadUrl:mu,pageUrl:base,ext:"jpg"}));
-        }catch(e){}
-    }
-    return [];
-}
-
-/* ========== WIKIMEDIA (CC, optional) ========== */
-async function searchCommons(query){
-    try{
-        const url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch="+encodeURIComponent(query+" filetype:bitmap")+"&gsrsort=create_timestamp_desc&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=420";
-        const r=await fetch(url);
-        if(!r.ok)return [];
-        const data=await r.json();
-        const pages=(data.query&&data.query.pages)||{};
-        return Object.values(pages).filter(p=>p.imageinfo&&/^image\/(jpeg|png|gif)/.test(p.imageinfo[0].mime)).map(p=>{
-            const ii=p.imageinfo[0];
-            return {source:"Wikimedia",title:(p.title||"").replace("File:","").replace(/\.[a-z0-9]+$/i,""),mime:ii.mime,preview:ii.thumburl||ii.url,downloadUrl:ii.url,pageUrl:ii.descriptionurl||ii.url,ext:(ii.url.split(".").pop()||"jpg").split("?")[0]};
-        });
-    }catch(e){console.error(e);return [];}
-}
-
-/* ========== GIPHY ========== */
-async function searchGiphy(query,key){
-    try{
-        const r=await fetch("https://api.giphy.com/v1/gifs/search?api_key="+encodeURIComponent(key)+"&q="+encodeURIComponent(query)+"&limit=12&rating=pg-13");
-        if(!r.ok)return [];
-        const d=await r.json();
-        return (d.data||[]).map(g=>({source:"Giphy",title:g.title||"GIF",mime:"image/gif",preview:g.images.fixed_width.url,downloadUrl:g.images.original.url,pageUrl:g.url,ext:"gif"}));
-    }catch(e){console.error(e);return [];}
-}
-
-/* ========== RENDER ========== */
-function renderResults(){
-    const c=document.getElementById("results");
-    if(!state.results.length){
-        c.innerHTML=`<div class="empty"><div class="empty-icon">😕</div><b>कोई result नहीं</b><p style="margin-top:8px">Try: <b>Narendra Modi</b> / <b>election rally</b></p></div>`;
-        document.getElementById("status").textContent="कोई image नहीं मिली।";
-        return;
-    }
-    document.getElementById("status").textContent=`${state.results.length} images मिलीं — 16:9 quality चुनकर download करें।`;
-    c.innerHTML=state.results.map((item,i)=>createCard(item,i)).join("");
-}
-function createCard(item,i){
-    const isGif=item.mime==="image/gif";
-    return `<article class="img-card">
-        <div class="photo"><img src="${escapeAttr(item.preview)}" alt="" loading="lazy"><span class="badge">${escapeHTML(item.source)}</span>${isGif?'<span class="gifbadge">GIF</span>':""}</div>
-        <div class="card-body">
-            <div class="card-title">${escapeHTML(item.title)}</div>
-            <div class="card-buttons">
-                <button class="dl-photo" onclick="export169(${i})">${isGif?"⬇️ GIF Download करें":"⬇️ 16:9 Download (HD/FHD/4K)"}</button>
-                <button class="make-gif" onclick="makeGif(${i})">🎞️ GIF बनाएं</button>
-                <a class="src-btn" href="${escapeAttr(item.pageUrl)}" target="_blank" rel="noopener">🔗 Source</a>
+    <div class="container">
+        <div class="input-group">
+            <input type="text" id="compInput" placeholder="चैनल URL या @username डालें...">
+            <button onclick="addCompetitor()">Add</button>
+        </div>
+        <div id="channelsContainer">
+            <div style="text-align:center; color:#94a3b8; margin-top:40px;">
+                <span class="material-icons-round" style="font-size:40px; opacity:0.5;">youtube_searched_for</span><br>
+                कोई चैनल नहीं। URL डालकर Add करें।
             </div>
-            <div class="card-progress" id="p_${i}"></div>
-        </div></article>`;
-}
+        </div>
+    </div>
 
-/* ========== 16:9 HD/FHD/4K DOWNLOAD ========== */
-async function export169(i){
-    const item=state.results[i];
-    const p=document.getElementById("p_"+i);
-    p.classList.add("show");p.textContent="📥 Image download हो रही है...";
-    try{
-        if(item.mime==="image/gif"){
-            const b=await fetchViaProxy(item.downloadUrl);
-            saveBlob(b,slug(item.title)+".gif","image/gif");
-            p.textContent="✅ GIF download हो गई";
-            setTimeout(()=>p.classList.remove("show"),2500);
-            return;
+    <footer>&copy; 2026 Aryan News Tech</footer>
+
+    <!-- AI Generator Modal -->
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-header">
+            <button class="back-btn" onclick="closeAiModal()"><span class="material-icons-round">arrow_back</span> Back</button>
+            <h2 style="color:#fff; font-size:1.1rem; margin:0;">AI Studio</h2>
+            <div style="width: 60px;"></div>
+        </div>
+        
+        <div class="ai-content">
+            <div class="selected-topic-box">
+                <h4>🎯 Selected Topic:</h4>
+                <p id="selectedTopicText">News Title Here</p>
+                <input type="hidden" id="selectedChannelHidden">
+                <input type="hidden" id="selectedVideoIdHidden">
+            </div>
+
+            <div class="comp-data-box" id="compDataBox">
+                <h5>
+                    <span style="display:flex; align-items:center; gap:5px;">
+                        <span class="material-icons-round" style="font-size:16px;">troubleshoot</span> Live Fetched Data
+                    </span>
+                    <button class="refresh-data-btn" onclick="retryFetchData()">
+                        <span class="material-icons-round" style="font-size:14px;">refresh</span> Retry
+                    </button>
+                </h5>
+                
+                <strong style="font-size:0.7rem; color:#f8fafc;">Original Competitor Tags:</strong>
+                <div class="comp-data-text" id="compFetchedTags">Fetching real tags...</div>
+                
+                <strong style="font-size:0.7rem; color:#f8fafc;">Extracted Core Key Points (मुख्य बातें):</strong>
+                <div class="comp-data-text" id="compFetchedTranscript">Extracting key news points...</div>
+                
+                <input type="hidden" id="compFetchedDesc">
+            </div>
+
+            <button class="generate-btn" onclick="startAIProcessing()">
+                <span class="material-icons-round">auto_awesome</span> 
+                स्क्रिप्ट और SEO जनरेट करें
+            </button>
+
+            <div class="output-box" id="boxTitle">
+                <label>1. New SEO Title <button class="copy-btn" onclick="copyText('outTitle', this)"><span class="material-icons-round">content_copy</span> Copy</button></label>
+                <div class="output-content" id="outTitle"></div>
+            </div>
+            <div class="output-box" id="boxScript">
+                <label>2. Voiceover Script <button class="copy-btn" onclick="copyText('outScript', this)"><span class="material-icons-round">content_copy</span> Copy</button></label>
+                <div class="output-content" id="outScript"></div>
+            </div>
+            <div class="output-box" id="boxDesc">
+                <label>3. Hijack Description <button class="copy-btn" onclick="copyText('outDesc', this)"><span class="material-icons-round">content_copy</span> Copy</button></label>
+                <div class="output-content" id="outDesc"></div>
+            </div>
+            <div class="output-box" id="boxTags">
+                <label>4. Viral Tags <button class="copy-btn" onclick="copyText('outTags', this)"><span class="material-icons-round">content_copy</span> Copy</button></label>
+                <div class="output-content" id="outTags"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+        <div id="loaderText" style="color:white; font-weight:bold; margin-top:10px;">Please wait...</div>
+    </div>
+
+    <script>
+        const DEFAULT_YT_API = "https://youtube-api.babu902654.workers.dev";
+        const DEFAULT_GEMINI_API = "https://storystudio-api.babu902654.workers.dev";
+
+        let competitors = JSON.parse(localStorage.getItem("aryan_competitors") || "[]");
+
+        window.onload = () => {
+            document.getElementById('ytApiUrl').value = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
+            document.getElementById('geminiApiUrl').value = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
+            if(competitors.length > 0) loadAllChannels();
+        };
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebarOverlay');
+            if(sb.classList.contains('open')) { sb.classList.remove('open'); ov.style.display = 'none'; } 
+            else { sb.classList.add('open'); ov.style.display = 'block'; }
         }
-        const [W,H]=getQuality();
-        const blob=await fetchViaProxy(item.downloadUrl);
-        const img=await blobToImage(blob);
-        p.textContent=`🖼️ ${W}×${H} में convert हो रहा है...`;
-        const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
-        const ctx=canvas.getContext("2d");
-        const base=Math.max(W/img.naturalWidth,H/img.naturalHeight);
-        const sw=W/base,sh=H/base;
-        const sx=(img.naturalWidth-sw)/2,sy=(img.naturalHeight-sh)/2;
-        ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
-        const out=await new Promise(res=>canvas.toBlob(res,"image/jpeg",0.92));
-        saveBlob(out,slug(item.title)+"_"+W+"x"+H+".jpg","image/jpeg");
-        p.textContent=`✅ ${W}×${H} (16:9) download हो गई`;
-        showToast(`✅ ${W}×${H} image download हो गई`);
-        setTimeout(()=>p.classList.remove("show"),2500);
-    }catch(e){
-        console.error(e);
-        p.textContent="❌ Error — Source link से manually save करें";
-        window.open(item.downloadUrl,"_blank");
-        setTimeout(()=>p.classList.remove("show"),3000);
-    }
-}
-
-/* ========== ANIMATED GIF (quality-aware, max FHD) ========== */
-async function makeGif(i){
-    const item=state.results[i];
-    const p=document.getElementById("p_"+i);
-    p.classList.add("show");p.textContent="📥 Image load हो रही है...";
-    try{
-        let [W,H]=getQuality();
-        if(W>1920){W=1920;H=1080;showToast("GIF के लिए Full HD use किया (4K GIF बहुत भारी होती है)");}
-        const blob=await fetchViaProxy(item.downloadUrl);
-        const img=await blobToImage(blob);
-        p.textContent="🎞️ GIF frames बन रहे हैं...";
-        const {GIFEncoder,quantize,applyPalette}=await import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js");
-        const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
-        const ctx=canvas.getContext("2d",{willReadFrequently:true});
-        const gif=GIFEncoder();
-        const frames=20;
-        for(let f=0;f<frames;f++){
-            const zoom=1+0.3*(f/(frames-1));
-            const base=Math.max(W/img.naturalWidth,H/img.naturalHeight);
-            const sw=W/(base*zoom),sh=H/(base*zoom);
-            const sx=(img.naturalWidth-sw)/2,sy=(img.naturalHeight-sh)/2;
-            ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
-            const id=ctx.getImageData(0,0,W,H);
-            const palette=quantize(id.data,256);
-            const idx=applyPalette(id.data,palette);
-            gif.writeFrame(idx,W,H,{palette,delay:100});
+        
+        function saveSettings() {
+            localStorage.setItem("yt_api_url", document.getElementById('ytApiUrl').value.trim());
+            localStorage.setItem("gemini_api_url", document.getElementById('geminiApiUrl').value.trim());
+            toggleSidebar();
+            alert("✅ API Settings Saved!");
         }
-        gif.finish();
-        saveBlob(new Blob([gif.bytes()],{type:"image/gif"}),slug(item.title)+"_"+W+"x"+H+".gif","image/gif");
-        p.textContent=`✅ GIF (${W}×${H}) download हो गई`;
-        showToast("✅ Animated GIF download हो गई");
-        setTimeout(()=>p.classList.remove("show"),2500);
-    }catch(e){
-        console.error(e);
-        p.textContent="❌ GIF नहीं बनी — दूसरी image try करें";
-        setTimeout(()=>p.classList.remove("show"),3000);
-    }
-}
 
-/* ========== HELPERS ========== */
-function saveBlob(blob,name,type){
-    const u=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=u;a.download=name;
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u),4000);
-}
-function blobToImage(blob){
-    return new Promise((res,rej)=>{
-        const u=URL.createObjectURL(blob);
-        const img=new Image();
-        img.onload=()=>{URL.revokeObjectURL(u);res(img);};
-        img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image decode failed"));};
-        img.src=u;
-    });
-}
-function slug(s){return String(s||"image").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"image";}
-function escapeHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
-function escapeAttr(v){return escapeHTML(v);}
+        const showLoader = (msg) => { document.getElementById('loaderText').innerText = msg; document.getElementById('loader').style.display = 'flex'; };
+        const hideLoader = () => { document.getElementById('loader').style.display = 'none'; };
 
-document.getElementById("headline").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();searchAll();}});
-document.getElementById("settingsModal").addEventListener("click",e=>{if(e.target.id==="settingsModal")closeSettings();});
-</script>
+        function extractHandle(input) {
+            let text = input.trim();
+            const match = text.match(/@([a-zA-Z0-9_.-]+)/);
+            if (match) return '@' + match[1];
+            return '@' + text.replace(/^@/, '');
+        }
+
+        function addCompetitor() {
+            const input = document.getElementById('compInput').value;
+            if (!input) return;
+            const handle = extractHandle(input);
+            if (!competitors.includes(handle)) {
+                competitors.unshift(handle); 
+                localStorage.setItem("aryan_competitors", JSON.stringify(competitors));
+            }
+            document.getElementById('compInput').value = '';
+            loadAllChannels();
+        }
+
+        function removeCompetitor(handle) {
+            competitors = competitors.filter(c => c !== handle);
+            localStorage.setItem("aryan_competitors", JSON.stringify(competitors));
+            loadAllChannels();
+        }
+
+        async function loadAllChannels() {
+            const container = document.getElementById('channelsContainer');
+            if (competitors.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#94a3b8; margin-top:40px;">कोई चैनल नहीं। URL डालकर Add करें।</div>`;
+                return;
+            }
+            container.innerHTML = '';
+            const ytApi = localStorage.getItem("yt_api_url") || DEFAULT_YT_API;
+
+            for (let handle of competitors) {
+                const cardId = 'card_' + handle.replace('@','');
+                container.innerHTML += `
+                <div class="channel-card" id="${cardId}">
+                    <div class="channel-header">
+                        <img src="https://ui-avatars.com/api/?name=${handle.replace('@','')}&background=1e293b&color=3b82f6&size=100&bold=true" alt="Logo">
+                        <h3>${handle} <span style="font-size:0.7rem;color:#94a3b8;">(Loading...)</span></h3>
+                        <button class="remove-btn" onclick="removeCompetitor('${handle}')"><span class="material-icons-round">delete</span></button>
+                    </div>
+                    <ul class="video-list" id="list_${cardId}"></ul>
+                </div>`;
+                fetchChannelData(ytApi, handle, cardId);
+            }
+        }
+
+        async function fetchChannelData(apiUrl, handle, cardId) {
+            const listContainer = document.getElementById(`list_${cardId}`);
+            let entriesData = [];
+
+            const updateUI = (name, data) => {
+                const headerH3 = document.querySelector(`#${cardId} h3`);
+                if(headerH3) headerH3.innerHTML = `${name} <span style="font-size:0.7rem; color:#10b981;">(Live)</span>`;
+                
+                let listHtml = '';
+                data.forEach(item => {
+                    const safeTitle = encodeURIComponent(item.title);
+                    const safeHandle = encodeURIComponent(handle);
+                    listHtml += `
+                    <li class="video-item" onclick="openAiModal('${safeTitle}', '${safeHandle}', '${item.videoId}')">
+                        <img src="https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg" alt="Thumb" class="vid-thumb" onerror="this.src='https://via.placeholder.com/90x50/1e293b/3b82f6?text=Video'">
+                        <div style="flex:1;">
+                            <p>${item.title}</p>
+                            <small>🕒 ${item.published}</small>
+                        </div>
+                    </li>`;
+                });
+                listContainer.innerHTML = listHtml;
+            };
+
+            // 1. Worker Endpoint Call (HTTPS)
+            try {
+                const res = await fetch(`${apiUrl}/?channel_id=${encodeURIComponent(handle)}`);
+                if (res.ok) {
+                    const xmlText = await res.text();
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                    let entries = xmlDoc.getElementsByTagName("entry");
+                    if(entries.length === 0) entries = xmlDoc.getElementsByTagName("item");
+
+                    if (entries.length > 0) {
+                        const authorEl = xmlDoc.getElementsByTagName("name")[0] || xmlDoc.getElementsByTagName("author")[0];
+                        let authorName = authorEl ? authorEl.textContent.trim() : handle;
+
+                        for (let i = 0; i < Math.min(6, entries.length); i++) {
+                            const title = entries[i].getElementsByTagName("title")[0]?.textContent || 'No Title';
+                            let videoId = entries[i].getElementsByTagName("yt:videoId")[0]?.textContent;
+                            if(!videoId) {
+                                const linkEl = entries[i].getElementsByTagName("link")[0];
+                                const match = linkEl ? linkEl.getAttribute("href").match(/v=([^&]+)/) : null;
+                                if(match) videoId = match[1];
+                            }
+                            if(videoId) entriesData.push({ title, published: "हाल ही में", videoId });
+                        }
+                        if(entriesData.length > 0) return updateUI(authorName, entriesData);
+                    }
+                }
+            } catch (e) {}
+
+            // 2. RSS2JSON Fallback
+            try {
+                const jsonFeedUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?user=' + handle.replace('@',''))}`;
+                const res = await fetch(jsonFeedUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.items && data.items.length > 0) {
+                        entriesData = data.items.slice(0, 6).map(item => ({
+                            title: item.title,
+                            published: new Date(item.pubDate).toLocaleDateString('hi-IN', {day:'numeric', month:'short'}),
+                            videoId: item.guid.replace('yt:video:', '')
+                        }));
+                        return updateUI(data.feed.title || handle, entriesData);
+                    }
+                }
+            } catch (rssErr) {}
+
+            listContainer.innerHTML = `<li style="padding:15px; color:#ef4444; text-align:center; font-size:0.85rem;">चैनल डेटा लोड नहीं हो पाया।</li>`;
+        }
+
+        async function fetchCompetitorData(videoId) {
+            const elTags = document.getElementById('compFetchedTags');
+            const elTranscript = document.getElementById('compFetchedTranscript');
+            const elDesc = document.getElementById('compFetchedDesc');
+
+            elTags.innerText = "Fetching real tags...";
+            elTranscript.innerText = "Extracting core news points...";
+            elDesc.value = "";
+            
+            if(!videoId) return;
+
+            // Open Lemnoslife Free API
+            try {
+                const infoRes = await fetch(`https://yt.lemnoslife.com/noKey/videos?id=${videoId}`);
+                if (infoRes.ok) {
+                    const infoData = await infoRes.json();
+                    const item = infoData?.items?.[0]?.snippet;
+                    if (item) {
+                        if (item.tags) elTags.innerText = item.tags.join(", ");
+                        else elTags.innerText = "News Today, Breaking News, Latest Updates";
+                        if (item.description) elDesc.value = item.description;
+                    }
+                }
+            } catch(e) {
+                elTags.innerText = "News Today, Breaking News, Latest Updates";
+            }
+
+            elTranscript.innerText = "मुख्य बिंदु: AI शीर्षक और विवरण के आधार पर सर्वोत्तम वीडियो सामग्री बनाएगा।";
+        }
+
+        async function retryFetchData() {
+            const videoId = document.getElementById('selectedVideoIdHidden').value;
+            if(!videoId) return alert("वीडियो ID नहीं मिली!");
+            showLoader("डेटा लोड हो रहा है...");
+            await fetchCompetitorData(videoId);
+            hideLoader();
+        }
+
+        async function openAiModal(encodedTitle, encodedHandle, videoId) {
+            const title = decodeURIComponent(encodedTitle);
+            const handle = decodeURIComponent(encodedHandle);
+            
+            document.getElementById('selectedTopicText').innerText = title;
+            document.getElementById('selectedChannelHidden').value = handle;
+            document.getElementById('selectedVideoIdHidden').value = videoId;
+            
+            document.querySelectorAll('.output-box').forEach(box => box.classList.remove('show'));
+            document.getElementById('aiModal').classList.add('active');
+            
+            showLoader("मुख्य बिंदु लोड हो रहे हैं...");
+            await fetchCompetitorData(videoId);
+            hideLoader();
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+
+        async function startAIProcessing() {
+            const title = document.getElementById('selectedTopicText').innerText;
+            const compChannel = document.getElementById('selectedChannelHidden').value;
+            const geminiApi = localStorage.getItem("gemini_api_url") || DEFAULT_GEMINI_API;
+            
+            const realTags = document.getElementById('compFetchedTags').innerText;
+            const corePoints = document.getElementById('compFetchedTranscript').innerText;
+            const realDesc = document.getElementById('compFetchedDesc').value;
+            
+            showLoader("AI मुख्य खबरों का विश्लेषण करके स्क्रिप्ट बना रहा है...");
+            
+            const promptText = `
+                तुम एक प्रोफेशनल यूट्यूब न्यूज़ राइटर और SEO एक्सपर्ट हो।
+                
+                [COMPETITOR DATA]:
+                - Title: "${title}"
+                - Channel: "${compChannel}"
+                - Real Tags: "${realTags}"
+                - Core News Points: "${corePoints}"
+                
+                [INSTRUCTIONS]:
+                1. ओरिजिनल टाइटल और खबरों में से केवल मुख्य और काम की खबरों को चुनो।
+                2. फालतू की बातें हटाकर 1 मिनट की एक रोमांचक न्यूज़ वॉइसओवर स्क्रिप्ट तैयार करो।
+                3. भाषा एकदम साफ़ और आकर्षक हिंदी होनी चाहिए।
+                
+                मुझे ये 4 चीज़ें बिल्कुल इसी फॉर्मेट में दो (बिना किसी अतिरिक्त टेक्स्ट के):
+                
+                [TITLE]
+                (ओरिजिनल टाइटल के मुख्य कीवर्ड्स मत हटाना। बस शुरू में "बड़ी खबर!" या "देखिए:" जोड़ दो। यह 100 कैरेक्टर से छोटा हो।)
+                
+                [SCRIPT]
+                (1 मिनट की बेस्ट वॉइसओवर स्क्रिप्ट। शुरुआत ऐसे करो: "नमस्कार! आप देख रहे हैं आर्यन न्यूज़ टेक..." खबर को बहुत ही आकर्षक तरीके से समझाओ।)
+                
+                [DESC]
+                (यहाँ हाई-रैंकिंग SEO डिस्क्रिप्शन लिखो। मुख्य खबरों का सारांश दो। अंत में यह लाइन लिखो: "Topic coverage similar to ${compChannel} and latest news updates." हैशटैग भी दो जैसे #AryanNewsTech #${compChannel.replace('@','')})
+                
+                [TAGS]
+                (${compChannel.replace('@','')}, Aryan News Tech, ${realTags}, Latest News, Viral News)
+            `;
+
+            try {
+                let geminiRes = await fetch(geminiApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText }) 
+                });
+                
+                if (!geminiRes.ok) {
+                    geminiRes = await fetch(geminiApi, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                    });
+                }
+
+                if (!geminiRes.ok) {
+                    const errorText = await geminiRes.text();
+                    throw new Error(`Worker Error (${geminiRes.status}): ${errorText.substring(0, 50)}`);
+                }
+
+                const data = await geminiRes.json();
+                
+                let aiResponse = "";
+                if (data.response) aiResponse = data.response;
+                else if (data.text) aiResponse = data.text;
+                else if (data.candidates && data.candidates.length > 0) aiResponse = data.candidates[0].content.parts[0].text;
+                else if (data.result) aiResponse = data.result;
+                else aiResponse = JSON.stringify(data);
+
+                const getSection = (str, startTag, endTag) => {
+                    if(!str.includes(startTag)) return "";
+                    let content = str.split(startTag)[1];
+                    if(endTag && content.includes(endTag)) content = content.split(endTag)[0];
+                    return content.trim();
+                };
+
+                let finalTitle = getSection(aiResponse, "[TITLE]", "[SCRIPT]");
+                let finalScript = getSection(aiResponse, "[SCRIPT]", "[DESC]");
+                let finalDesc = getSection(aiResponse, "[DESC]", "[TAGS]");
+                let finalTags = getSection(aiResponse, "[TAGS]", null);
+
+                if (!finalTitle && !finalScript) {
+                    finalScript = aiResponse; 
+                    finalTitle = "AI जनरेटेड कंटेंट (स्क्रिप्ट देखें)";
+                }
+
+                document.getElementById('outTitle').innerText = finalTitle;
+                document.getElementById('outScript').innerText = finalScript;
+                document.getElementById('outDesc').innerText = finalDesc;
+                document.getElementById('outTags').innerText = finalTags;
+
+                document.querySelectorAll('.output-box').forEach(box => box.classList.add('show'));
+                
+                hideLoader();
+            } catch (e) {
+                hideLoader();
+                alert("AI जनरेशन में एरर:\n" + e.message);
+            }
+        }
+
+        async function copyText(elementId, btnElement) {
+            const text = document.getElementById(elementId).innerText;
+            const originalHtml = btnElement.innerHTML;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                btnElement.innerHTML = `<span class="material-icons-round" style="font-size:14px">check</span> Copied`;
+                btnElement.style.background = "rgba(16, 185, 129, 0.2)";
+                btnElement.style.color = "#10b981";
+                btnElement.style.borderColor = "#10b981";
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHtml;
+                    btnElement.style.background = "rgba(59, 130, 246, 0.2)";
+                    btnElement.style.color = "#60a5fa";
+                    btnElement.style.borderColor = "#3b82f6";
+                }, 2000);
+            } catch (err) {
+                alert("कॉपी नहीं हो पाया!");
+            }
+        }
+    </script>
 </body>
 </html>
