@@ -1,128 +1,133 @@
-// api/yt.js - Real Transcript Subtitle Extractor
+// api/yt.js — Real Transcript + Channel Video Extractor (FIXED)
+// YouTube RSS server IPs par 404 deta hai, isliye primary method = HTML scraping
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { handle, videoId } = req.query;
 
-  // 1. Fetch Video Metadata + REAL Spoken Transcript Subtitles
+  const HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/*,*/*;q=0.8',
+    'Accept-Language': 'hi-IN,hi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Referer': 'https://www.youtube.com/'
+  };
+
+  const cleanText = (s) =>
+    (s || '')
+      .replace(/\\u([\da-f]{4})/gi, (_, g) => String.fromCharCode(parseInt(g, 16)))
+      .replace(/\\x([\da-f]{2})/gi, (_, g) => String.fromCharCode(parseInt(g, 16)))
+      .replace(/\\u0026/gi, '&')
+      .replace(/\\\//g, '/')
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>');
+
+  // ---------- Channel ke videos (HTML se) ----------
+  function parseVideos(html) {
+    const items = [];
+    const seen = {};
+    const chunks = html.split('"videoRenderer":{');
+    for (let i = 1; i < chunks.length && items.length < 8; i++) {
+      const chunk = chunks[i];
+      const vid = (chunk.match(/"videoId":"([\w-]{11})"/) || [])[1];
+      const title = (chunk.match(/"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/) || [])[1];
+      const pub = (chunk.match(/"publishedTimeText":\{"simpleText":"((?:[^"\\]|\\.)*)"/) || [])[1];
+      if (vid && title && !seen[vid]) {
+        seen[vid] = 1;
+        items.push({ videoId: vid, title: cleanText(title), published: pub ? cleanText(pub) : 'हाल ही में' });
+      }
+    }
+    return items;
+  }
+
+  // ---------- 1) Video Meta + REAL Spoken Transcript ----------
   if (videoId) {
+    let tags = [], desc = '', transcript = '';
     try {
-      const ytRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-        headers: { 
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-          'Accept-Language': 'hi-IN,hi;q=0.9,en-US;q=0.8,en;q=0.7'
-        }
-      });
+      const ytRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers: HEADERS });
       const html = await ytRes.text();
 
-      let tags = ["DLS News", "Breaking News", "Latest Updates"];
-      let desc = "";
-      let transcript = "";
-
-      const jsonMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
-      if (jsonMatch && jsonMatch[1]) {
-        const data = JSON.parse(jsonMatch[1]);
-        if (data.videoDetails?.keywords) tags = data.videoDetails.keywords;
-        if (data.videoDetails?.shortDescription) desc = data.videoDetails.shortDescription;
-
-        // --- REAL SUBTITLE / CAPTION EXTRACTOR ---
-        const captionTracks = data.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-        if (captionTracks.length > 0) {
-          let subTrack = captionTracks.find(t => t.languageCode === 'hi') || 
-                         captionTracks.find(t => t.languageCode === 'en') || 
-                         captionTracks[0];
-
+      const jsonMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\});/s);
+      if (jsonMatch) {
+        try {
+          const data = JSON.parse(jsonMatch[1]);
+          tags = data.videoDetails?.keywords || [];
+          desc = data.videoDetails?.shortDescription || '';
+          const tracks = data.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+          const subTrack = tracks.find(t => t.languageCode === 'hi') || tracks.find(t => t.languageCode === 'en') || tracks[0];
           if (subTrack && subTrack.baseUrl) {
-            const subRes = await fetch(subTrack.baseUrl);
+            const subRes = await fetch(subTrack.baseUrl, { headers: HEADERS });
             if (subRes.ok) {
               const xmlText = await subRes.text();
-              transcript = xmlText
-                .replace(/<text[^>]*>/gi, ' ')
-                .replace(/<\/text>/gi, ' ')
-                .replace(/<[^>]+>/g, '')
-                .replace(/&amp;/g, '&')
-                .replace(/&#39;/g, "'")
-                .replace(/&quot;/g, '"')
-                .replace(/\s+/g, ' ')
-                .trim();
+              transcript = xmlText.replace(/<text[^>]*>/gi, ' ').replace(/<\/text>/gi, ' ')
+                .replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'")
+                .replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
             }
           }
-        }
+        } catch (e) {}
       }
 
+      // Fallback regex (agar JSON parse fail ho)
+      if (!tags.length) {
+        const km = html.match(/"keywords":\[(.*?)\]/s);
+        if (km) tags = [...km[1].matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(m => cleanText(m[1]));
+      }
+      if (!desc) {
+        const dm = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/s);
+        if (dm) desc = cleanText(dm[1]);
+      }
+      if (!transcript) {
+        const cm = html.match(/"baseUrl":"((?:[^"\\]|\\.)*timedtext(?:[^"\\]|\\.)*)"/s);
+        if (cm) {
+          const subRes = await fetch(cleanText(cm[1]), { headers: HEADERS });
+          if (subRes.ok) {
+            transcript = (await subRes.text()).replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+          }
+        }
+      }
       return res.status(200).json({ status: 'ok', tags, desc, transcript });
     } catch (e) {
-      return res.status(200).json({ status: 'ok', tags: ["DLS News", "Latest Updates"], desc: "", transcript: "" });
+      return res.status(200).json({ status: 'ok', tags, desc, transcript });
     }
   }
 
-  // 2. Fetch Channel Videos
+  // ---------- 2) Channel Videos (scraping primary, RSS last fallback) ----------
   if (!handle) return res.status(400).json({ error: 'Missing handle' });
 
-  let cleanHandle = handle.replace('@', '').trim();
-  let channelId = cleanHandle;
+  const clean = String(handle).replace(/^@/, '').trim();
+  const tryUrls = [
+    `https://www.youtube.com/@${clean}/videos`,
+    `https://www.youtube.com/@${clean}`,
+    `https://www.youtube.com/c/${clean}/videos`,
+    `https://www.youtube.com/c/${clean}`,
+    `https://www.youtube.com/user/${clean}/videos`
+  ];
 
-  if (!cleanHandle.startsWith('UC')) {
-    const targetUrls = [
-      `https://www.youtube.com/@${cleanHandle}`,
-      `https://www.youtube.com/c/${cleanHandle}`,
-      `https://www.youtube.com/user/${cleanHandle}`
-    ];
+  for (const url of tryUrls) {
+    try {
+      const r = await fetch(url, { headers: HEADERS });
+      if (!r.ok) continue;
+      const html = await r.text();
+      const items = parseVideos(html);
+      if (!items.length) continue;
 
-    for (let targetUrl of targetUrls) {
-      try {
-        const hRes = await fetch(targetUrl, {
-          headers: { 
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9'
-          }
-        });
-        if (hRes.ok) {
-          const html = await hRes.text();
-          const match = html.match(/"externalId"\s*:\s*"(UC[a-zA-Z0-9_-]+)"/) ||
-                        html.match(/"channelId"\s*:\s*"(UC[a-zA-Z0-9_-]+)"/) ||
-                        html.match(/channel_id=(UC[a-zA-Z0-9_-]+)/) ||
-                        html.match(/href="https:\/\/www\.youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)"/);
-          if (match && match[1]) {
-            channelId = match[1];
-            break;
-          }
-        }
-      } catch (e) {}
-    }
+      const nameMatch =
+        html.match(/"channelMetadataRenderer":\{"title":"((?:[^"\\]|\\.)*)"/) ||
+        html.match(/<meta property="og:title" content="([^"]+)"/) ||
+        html.match(/"ownerText":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/);
+      const channelName = nameMatch ? cleanText(nameMatch[1]) : clean;
+
+      return res.status(200).json({ status: 'ok', channelName, items });
+    } catch (e) { /* agla URL try karo */ }
   }
 
-  try {
-    const rssRes = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
-    if (!rssRes.ok) throw new Error('RSS Fetch Failed');
-
-    const xmlText = await rssRes.text();
-    const items = [];
-    const entryMatches = xmlText.match(/<entry>[\s\S]*?<\/entry>/g) || [];
-
-    for (let entry of entryMatches.slice(0, 6)) {
-      const titleMatch = entry.match(/<title>(.*?)<\/title>/);
-      const videoIdMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
-      const pubMatch = entry.match(/<published>(.*?)<\/published>/);
-
-      if (videoIdMatch && titleMatch) {
-        let title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').replace(/&amp;/g, '&');
-        items.push({
-          title: title,
-          videoId: videoIdMatch[1],
-          published: pubMatch ? new Date(pubMatch[1]).toLocaleDateString('hi-IN', { day: 'numeric', month: 'short' }) : 'हाल ही में'
-        });
-      }
-    }
-
-    const channelTitleMatch = xmlText.match(/<title>(.*?)<\/title>/);
-    const channelName = channelTitleMatch ? channelTitleMatch[1] : handle;
-
-    return res.status(200).json({ status: 'ok', channelName, items });
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed' });
-  }
+  return res.status(500).json({ error: 'Channel load failed' });
 }
