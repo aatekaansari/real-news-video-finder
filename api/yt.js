@@ -1,4 +1,4 @@
-// api/yt.js - Super Handle Resolver
+// api/yt.js - Real Transcript Subtitle Extractor
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -7,29 +7,55 @@ export default async function handler(req, res) {
 
   const { handle, videoId } = req.query;
 
-  // 1. Fetch Video Metadata
+  // 1. Fetch Video Metadata + REAL Spoken Transcript Subtitles
   if (videoId) {
     try {
       const ytRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
         headers: { 
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+          'Accept-Language': 'hi-IN,hi;q=0.9,en-US;q=0.8,en;q=0.7'
         }
       });
       const html = await ytRes.text();
 
-      let tags = ["Clean News UP", "News", "Breaking News", "Latest Updates"];
+      let tags = ["DLS News", "Breaking News", "Latest Updates"];
       let desc = "";
+      let transcript = "";
 
       const jsonMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
       if (jsonMatch && jsonMatch[1]) {
         const data = JSON.parse(jsonMatch[1]);
         if (data.videoDetails?.keywords) tags = data.videoDetails.keywords;
         if (data.videoDetails?.shortDescription) desc = data.videoDetails.shortDescription;
+
+        // --- REAL SUBTITLE / CAPTION EXTRACTOR ---
+        const captionTracks = data.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+        if (captionTracks.length > 0) {
+          let subTrack = captionTracks.find(t => t.languageCode === 'hi') || 
+                         captionTracks.find(t => t.languageCode === 'en') || 
+                         captionTracks[0];
+
+          if (subTrack && subTrack.baseUrl) {
+            const subRes = await fetch(subTrack.baseUrl);
+            if (subRes.ok) {
+              const xmlText = await subRes.text();
+              transcript = xmlText
+                .replace(/<text[^>]*>/gi, ' ')
+                .replace(/<\/text>/gi, ' ')
+                .replace(/<[^>]+>/g, '')
+                .replace(/&amp;/g, '&')
+                .replace(/&#39;/g, "'")
+                .replace(/&quot;/g, '"')
+                .replace(/\s+/g, ' ')
+                .trim();
+            }
+          }
+        }
       }
 
-      return res.status(200).json({ status: 'ok', tags, desc });
+      return res.status(200).json({ status: 'ok', tags, desc, transcript });
     } catch (e) {
-      return res.status(200).json({ status: 'ok', tags: ["Clean News UP", "Latest Updates"], desc: "" });
+      return res.status(200).json({ status: 'ok', tags: ["DLS News", "Latest Updates"], desc: "", transcript: "" });
     }
   }
 
@@ -39,7 +65,6 @@ export default async function handler(req, res) {
   let cleanHandle = handle.replace('@', '').trim();
   let channelId = cleanHandle;
 
-  // Handle Resolution Algorithm
   if (!cleanHandle.startsWith('UC')) {
     const targetUrls = [
       `https://www.youtube.com/@${cleanHandle}`,
@@ -70,7 +95,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // YouTube RSS Feed Fetching
   try {
     const rssRes = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
     if (!rssRes.ok) throw new Error('RSS Fetch Failed');
